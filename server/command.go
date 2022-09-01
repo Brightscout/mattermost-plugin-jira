@@ -251,12 +251,33 @@ func createSettingsCommand(optInstance bool) *model.AutocompleteData {
 		"list", "", "View your current settings")
 	settings.AddCommand(list)
 
-	notifications := model.NewAutocompleteData(
-		"notifications", "[on|off]", "Update your user notifications settings")
-	notifications.AddStaticListArgument("value", true, []model.AutocompleteListItem{
+	setting := []model.AutocompleteListItem{
 		{HelpText: "Turn notifications on", Item: "on"},
 		{HelpText: "Turn notifications off", Item: "off"},
-	})
+	}
+
+	notifications := model.NewAutocompleteData(
+		"notifications", "[assinee|mention|reporter]", "manage notifications")
+
+	assigneeNotifications := model.NewAutocompleteData(
+		subCommandAssignee, "", "manage assignee notifications")
+	assigneeNotifications.AddStaticListArgument("value", true, setting)
+
+	mentionNotifications := model.NewAutocompleteData(
+		subCommandMention, "", "manage mention notifications")
+	mentionNotifications.AddStaticListArgument("value", true, setting)
+
+	reporterNotifications := model.NewAutocompleteData(
+		subCommandReporter, "", "manage reporter notifications")
+	reporterNotifications.AddStaticListArgument("value", true, setting)
+
+	watchingNotifications := model.NewAutocompleteData(
+		subCommandWatching, "", "manage watching notifications")
+	reporterNotifications.AddStaticListArgument("value", true, setting)
+	notifications.AddCommand(assigneeNotifications)
+	notifications.AddCommand(mentionNotifications)
+	notifications.AddCommand(reporterNotifications)
+	notifications.AddCommand(watchingNotifications)
 	withFlagInstance(notifications, optInstance, routeAutocompleteInstalledInstanceWithAlias)
 	settings.AddCommand(notifications)
 
@@ -367,10 +388,12 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArg
 	if err != nil {
 		return p.responsef(commandArgs, err.Error()), nil
 	}
+
 	args := strings.Fields(commandArgs.Command)
 	if len(args) == 0 || args[0] != "/jira" {
 		return p.help(commandArgs), nil
 	}
+
 	return jiraCommandHandler.Handle(p, c, commandArgs, args[1:]...), nil
 }
 
@@ -583,7 +606,10 @@ func executeSettings(p *Plugin, c *plugin.Context, header *model.CommandArgs, ar
 
 	switch args[0] {
 	case "list":
-		return p.responsef(header, "Current settings:\n%s", conn.Settings.String())
+		if conn.Settings != nil {
+			return p.responsef(header, "Current settings:\n%s", conn.Settings.String())
+		}
+		return p.responsef(header, "Please connect to jira account `/jira connect`")
 	case "notifications":
 		return p.settingsNotifications(header, instance.GetID(), user.MattermostUserID, conn, args)
 	default:
