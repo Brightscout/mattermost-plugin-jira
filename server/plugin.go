@@ -357,15 +357,14 @@ func (p *Plugin) AddAutolinksForCloudInstance(ci *cloudInstance) error {
 		return fmt.Errorf("unable to get project keys: %w", err)
 	}
 
-	err = p.AddAutolinks(plist, ci.BaseURL)
-	if err != nil {
+	if err = p.AddAutolinks(plist, ci.BaseURL); err != nil {
 		return fmt.Errorf("some keys were not installed: %w", err)
 	}
 
 	return nil
 }
 
-func (p *Plugin) AddAutolinks(plist jira.ProjectList, baseURL string) error {
+func (p *Plugin) AddAutolinks(projectList jira.ProjectList, baseURL string) error {
 	baseURL = strings.TrimRight(baseURL, "/")
 	installList := []autolink.Autolink{
 		{
@@ -380,7 +379,7 @@ func (p *Plugin) AddAutolinks(plist jira.ProjectList, baseURL string) error {
 		},
 	}
 
-	for _, proj := range plist {
+	for _, proj := range projectList {
 		key := proj.Key
 		installList = append(installList, autolink.Autolink{
 			Name:     key + " key to link for " + baseURL,
