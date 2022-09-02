@@ -379,8 +379,8 @@ func (p *Plugin) AddAutolinks(projectList jira.ProjectList, baseURL string) erro
 		},
 	}
 
-	for _, proj := range projectList {
-		key := proj.Key
+	for _, project := range projectList {
+		key := project.Key
 		installList = append(installList, autolink.Autolink{
 			Name:     key + " key to link for " + baseURL,
 			Pattern:  `(` + key + `)(-)(?P<jira_id>\d+)`,
