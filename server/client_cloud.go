@@ -4,7 +4,7 @@
 package main
 
 import (
-	"encoding/json"	
+	"encoding/json"
 
 	jira "github.com/andygrunwald/go-jira"
 	"github.com/pkg/errors"

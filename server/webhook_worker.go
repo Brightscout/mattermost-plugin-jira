@@ -50,7 +50,6 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 		ww.p.errorf("WebhookWorker id: %d, error posting notifications, err: %v", ww.id, err)
 	}
 
-
 	channelsSubscribed, err := ww.p.getChannelsSubscribed(v, msg.InstanceID)
 	if err != nil {
 		return err

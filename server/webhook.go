@@ -74,7 +74,7 @@ func (wh webhook) PostToChannel(p *Plugin, instanceID types.ID, channelID, fromU
 	if wh.text != "" && !p.getConfig().HideDecriptionComment {
 		text = p.replaceJiraAccountIds(instanceID, wh.text)
 	}
- 
+
 	if text != "" || len(wh.fields) != 0 {
 		model.ParseSlackAttachment(post, []*model.SlackAttachment{
 			{
@@ -111,8 +111,6 @@ func (wh *webhook) PostNotifications(p *Plugin, instanceID types.ID) ([]*model.P
 
 	posts := []*model.Post{}
 	var mapForNotification = make(map[types.ID]int)
-
-
 	for _, notification := range wh.notifications {
 		var mattermostUserID types.ID
 		var err error

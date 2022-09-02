@@ -502,13 +502,13 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 
 	instanceID := r.FormValue("instance_id")
 
-	cimd, connection, err := p.GetJiraProjectMetadata(types.ID(instanceID), types.ID(mattermostUserID))
+	metainfo, connection, err := p.GetJiraProjectMetadata(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
 		return respondErr(w, http.StatusInternalServerError,
 			errors.WithMessage(err, "failed to GetProjectMetadata"))
 	}
 
-	if len(cimd.Projects) == 0 {
+	if len(metainfo.Projects) == 0 {
 		_, err = respondJSON(w, map[string]interface{}{
 			"error": "You do not have permission to create issues in any projects. Please contact your Jira admin.",
 		})
@@ -519,9 +519,9 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	}
 
 	type option = utils.ReactSelectOption
-	projects := make([]option, 0, len(cimd.Projects))
-	issues := make(map[string][]option, len(cimd.Projects))
-	for _, prj := range cimd.Projects {
+	projects := make([]option, 0, len(metainfo.Projects))
+	issues := make(map[string][]option, len(metainfo.Projects))
+	for _, prj := range metainfo.Projects {
 		projects = append(projects, option{
 			Value: prj.Key,
 			Label: prj.Name,
@@ -1054,13 +1054,13 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 		return
 	}
 
-	watcherUsers, err := client.GetWatchers(instanceID.String(), wh.Issue.ID, connection)
+	watchers, err := client.GetWatchers(instanceID.String(), wh.Issue.ID, connection)
 	if err != nil {
-		p.errorf("error while getting watchers for issue , err : %v", err)
+		p.errorf("error while getting watchers for issue , err : %v , issue id : %v", err, wh.Issue.ID)
 		return
 	}
 
-	for _, watcherUser := range watcherUsers.Watchers {
+	for _, watcherUser := range watchers.Watchers {
 
 		whUserNotification := webhookUserNotification{
 			jiraUsername:     watcherUser.Name,
@@ -1081,7 +1081,7 @@ func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, rep
 	}
 
 	jwhook := wh.JiraWebhook
-	
+
 	if reporter == nil ||
 		(reporter.Name != "" && reporter.Name == jwhook.User.Name) ||
 		(reporter.AccountID != "" && reporter.AccountID == jwhook.Comment.UpdateAuthor.AccountID) {
@@ -1092,11 +1092,11 @@ func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, rep
 
 	commentMessage := fmt.Sprintf("%s **commented** on %s:\n> %s", commentAuthor, jwhook.mdKeySummaryLink(), jwhook.Comment.Body)
 
-	c, err := p.GetUserSetting(wh, instanceID, reporter.Name, reporter.AccountID)
-	if err != nil || c.Settings == nil || !c.Settings.ShouldReceiveNotificationsForReporter() {
+	connection, err := p.GetUserSetting(wh, instanceID, reporter.Name, reporter.AccountID)
+	if err != nil || connection.Settings == nil || !connection.Settings.ShouldReceiveNotificationsForReporter() {
 		return
 	}
-	
+
 	wh.notifications = append(wh.notifications, webhookUserNotification{
 		jiraUsername:     reporter.Name,
 		jiraAccountID:    reporter.AccountID,
@@ -1108,7 +1108,6 @@ func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, rep
 }
 
 func (p *Plugin) GetUserSetting(wh *webhook, instanceID types.ID, jiraAccountID, jiraUsername string) (*Connection, error) {
-	var err error
 	instance, err := p.instanceStore.LoadInstance(instanceID)
 	if err != nil {
 		return nil, err
@@ -1119,17 +1118,16 @@ func (p *Plugin) GetUserSetting(wh *webhook, instanceID types.ID, jiraAccountID,
 	} else {
 		mattermostUserID, err = p.userStore.LoadMattermostUserID(instance.GetID(), jiraUsername)
 	}
-
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := p.userStore.LoadConnection(instanceID, mattermostUserID)
+	connection, err := p.userStore.LoadConnection(instanceID, mattermostUserID)
 	if err != nil {
 		return nil, err
 	}
 
-	return c, nil
+	return connection, nil
 }
 
 func (s *ConnectionSettings) ShouldReceiveNotificationsForAssignee() bool {
@@ -1200,22 +1198,21 @@ func (wh *webhook) fetchConnectedUser(p *Plugin, instanceID types.ID) (Client, *
 		} else {
 			mattermostUserID, err = p.userStore.LoadMattermostUserID(instance.GetID(), account["Name"])
 		}
-
 		if err != nil {
 			continue
 		}
 
-		c, err2 := p.userStore.LoadConnection(instance.GetID(), mattermostUserID)
-		if err2 != nil {
+		connection, err := p.userStore.LoadConnection(instance.GetID(), mattermostUserID)
+		if err != nil {
 			continue
 		}
 
-		client, err2 := instance.GetClient(c)
-		if err2 != nil {
+		client, err := instance.GetClient(connection)
+		if err != nil {
 			continue
 		}
 
-		return client, c, nil
+		return client, connection, nil
 	}
 
 	return nil, nil, nil
