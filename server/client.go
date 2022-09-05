@@ -169,13 +169,13 @@ func (client JiraClient) RESTPostAttachment(issueID string, data []byte, name st
 }
 
 func (client JiraClient) GetAllProjectKeys() ([]string, error) {
-	projectlist, resp, err := client.Jira.Project.GetList()
+	projectList, resp, err := client.Jira.Project.GetList()
 	if err != nil {
 		return nil, userFriendlyJiraError(resp, err)
 	}
 
-	keys := make([]string, 0, len(*projectlist))
-	for _, project := range *projectlist {
+	keys := make([]string, 0, len(*projectList))
+	for _, project := range *projectList {
 		keys = append(keys, project.Key)
 	}
 
@@ -206,8 +206,9 @@ func (client JiraClient) GetWatchers(instanceID, issueKey string, connection *Co
 	params := map[string]string{
 		"accountId": connection.AccountID,
 	}
+	endpoint := fmt.Sprintf("%s%s%s%s", instanceID, "/rest/api/2/issue/",issueKey,"/watchers")
 
-	if err := client.RESTGet(instanceID+"/rest/api/2/issue/"+issueKey+"/watchers", params, &watchers); err != nil {
+	if err := client.RESTGet(endpoint, params, &watchers); err != nil {
 		return nil, err
 	}
 	return &watchers, nil
@@ -418,7 +419,7 @@ func endpointURL(endpoint string) (string, error) {
 		return "", err
 	}
 	if parsedURL.Scheme == "" {
-		// relative path
+		// Relative path
 		endpoint = fmt.Sprintf("/rest/api/%s", endpoint)
 	}
 	return endpoint, nil

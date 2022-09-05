@@ -609,7 +609,7 @@ func executeSettings(p *Plugin, c *plugin.Context, header *model.CommandArgs, ar
 		if conn.Settings != nil {
 			return p.responsef(header, "Current settings:\n%s", conn.Settings.String())
 		}
-		return p.responsef(header, "Please connect to jira account `/jira connect`")
+		return p.responsef(header, "Please connect to jira account using command `/jira connect`")
 	case "notifications":
 		return p.settingsNotifications(header, instance.GetID(), user.MattermostUserID, conn, args)
 	default:

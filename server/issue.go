@@ -521,13 +521,13 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	type option = utils.ReactSelectOption
 	projects := make([]option, 0, len(metainfo.Projects))
 	issues := make(map[string][]option, len(metainfo.Projects))
-	for _, prj := range metainfo.Projects {
+	for _, project := range metainfo.Projects {
 		projects = append(projects, option{
-			Value: prj.Key,
-			Label: prj.Name,
+			Value: project.Key,
+			Label: project.Name,
 		})
-		issueTypes := make([]option, 0, len(prj.IssueTypes))
-		for _, issue := range prj.IssueTypes {
+		issueTypes := make([]option, 0, len(project.IssueTypes))
+		for _, issue := range project.IssueTypes {
 			if issue.Subtasks {
 				continue
 			}
@@ -536,7 +536,7 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 				Label: issue.Name,
 			})
 		}
-		issues[prj.Key] = issueTypes
+		issues[project.Key] = issueTypes
 	}
 
 	return respondJSON(w, OutProjectMetadata{
@@ -1056,7 +1056,7 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 
 	watchers, err := client.GetWatchers(instanceID.String(), wh.Issue.ID, connection)
 	if err != nil {
-		p.errorf("error while getting watchers for issue , err : %v , issue id : %v", err, wh.Issue.ID)
+		p.errorf("error while getting watchers for the issue id %v , err : %v", wh.Issue.ID, err)
 		return
 	}
 
