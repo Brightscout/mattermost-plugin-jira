@@ -502,13 +502,13 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 
 	instanceID := r.FormValue("instance_id")
 
-	metainfo, connection, err := p.GetJiraProjectMetadata(types.ID(instanceID), types.ID(mattermostUserID))
+	metaInfo, connection, err := p.GetJiraProjectMetadata(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
 		return respondErr(w, http.StatusInternalServerError,
 			errors.WithMessage(err, "failed to GetProjectMetadata"))
 	}
 
-	if len(metainfo.Projects) == 0 {
+	if len(metaInfo.Projects) == 0 {
 		_, err = respondJSON(w, map[string]interface{}{
 			"error": "You do not have permission to create issues in any projects. Please contact your Jira admin.",
 		})
@@ -519,9 +519,9 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	}
 
 	type option = utils.ReactSelectOption
-	projects := make([]option, 0, len(metainfo.Projects))
-	issues := make(map[string][]option, len(metainfo.Projects))
-	for _, project := range metainfo.Projects {
+	projects := make([]option, 0, len(metaInfo.Projects))
+	issues := make(map[string][]option, len(metaInfo.Projects))
+	for _, project := range metaInfo.Projects {
 		projects = append(projects, option{
 			Value: project.Key,
 			Label: project.Name,
@@ -1061,7 +1061,6 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 	}
 
 	for _, watcherUser := range watchers.Watchers {
-
 		whUserNotification := webhookUserNotification{
 			jiraUsername:     watcherUser.Name,
 			jiraAccountID:    watcherUser.AccountID,

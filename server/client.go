@@ -206,7 +206,7 @@ func (client JiraClient) GetWatchers(instanceID, issueKey string, connection *Co
 	params := map[string]string{
 		"accountId": connection.AccountID,
 	}
-	endpoint := fmt.Sprintf("%s%s%s%s", instanceID, "/rest/api/2/issue/",issueKey,"/watchers")
+	endpoint := fmt.Sprintf("%s%s%s%s", instanceID, "/rest/api/2/issue/", issueKey, "/watchers")
 
 	if err := client.RESTGet(endpoint, params, &watchers); err != nil {
 		return nil, err
