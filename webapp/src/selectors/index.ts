@@ -21,7 +21,7 @@ export const getPluginServerRoute = (state) => {
     } else {
         url = new URL(window.location.href);
     }
-    
+
     basePath = url.pathname;
     if (basePath && basePath[basePath.length - 1] === '/') {
         basePath = basePath.substr(0, basePath.length - 1);
