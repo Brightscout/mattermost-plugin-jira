@@ -12,6 +12,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -174,9 +175,9 @@ func (client JiraClient) GetAllProjectKeys() ([]string, error) {
 		return nil, userFriendlyJiraError(resp, err)
 	}
 
-	keys := make([]string, 0, len(*projectList))
-	for _, project := range *projectList {
-		keys = append(keys, project.Key)
+	keys := make([]string, len(*projectList))
+	for index, project := range *projectList {
+		keys[index] = project.Key
 	}
 
 	return keys, nil
@@ -206,7 +207,7 @@ func (client JiraClient) GetWatchers(instanceID, issueKey string, connection *Co
 	params := map[string]string{
 		"accountId": connection.AccountID,
 	}
-	endpoint := fmt.Sprintf("%s%s%s%s", instanceID, "/rest/api/2/issue/", issueKey, "/watchers")
+	endpoint := fmt.Sprintf("%s/rest/api/2/issue/%s/watchers", instanceID, issueKey)
 
 	if err := client.RESTGet(endpoint, params, &watchers); err != nil {
 		return nil, err
@@ -420,7 +421,7 @@ func endpointURL(endpoint string) (string, error) {
 	}
 	if parsedURL.Scheme == "" {
 		// Relative path
-		endpoint = fmt.Sprintf("/rest/api/%s", endpoint)
+		endpoint = path.Join("/rest/api", endpoint)
 	}
 	return endpoint, nil
 }
