@@ -119,7 +119,7 @@ export const fetchJiraProjectMetadataForAllInstances = () => {
     return async (dispatch, getState) => {
         const instances = getInstalledInstances(getState());
         const promises = instances.map((instance) => dispatch(fetchJiraProjectMetadata(instance.instance_id)));
-        const responses = (await Promise.all(promises)) as APIResponse<ProjectMetadata>[];
+        const responses = await Promise.all(promises) as APIResponse<ProjectMetadata>[];
 
         const errors = [];
         const metadata = [];
