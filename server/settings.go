@@ -12,8 +12,8 @@ const (
 	settingOn  = "on"
 	settingOff = "off"
 
-	errStoreNewSettings = "Could not store new settings. Please contact your system administrator. error: %v"
-	errConnectToJira    = "Your username is not connected to Jira. Please type `/jira connect`. %v"
+	errStoreNewSettings = "Could not store new settings. Please contact your system administrator. Error: %v"
+	errConnectToJira    = "Your account is not connected to Jira. Please type `/jira connect`. %v"
 	subCommandAssignee  = "assignee"
 	subCommandMention   = "mention"
 	subCommandReporter  = "reporter"

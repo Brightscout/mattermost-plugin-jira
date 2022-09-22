@@ -257,22 +257,18 @@ func createSettingsCommand(optInstance bool) *model.AutocompleteData {
 	}
 
 	notifications := model.NewAutocompleteData(
-		"notifications", "[assinee|mention|reporter|watching]", "manage notifications")
+		"notifications", "[assignee|mention|reporter|watching]", "manage notifications")
 
-	assigneeNotifications := model.NewAutocompleteData(
-		subCommandAssignee, "", "manage assignee notifications")
+	assigneeNotifications := model.NewAutocompleteData(subCommandAssignee, "", "manage assignee notifications")
 	assigneeNotifications.AddStaticListArgument("value", true, setting)
 
-	mentionNotifications := model.NewAutocompleteData(
-		subCommandMention, "", "manage mention notifications")
+	mentionNotifications := model.NewAutocompleteData(subCommandMention, "", "manage mention notifications")
 	mentionNotifications.AddStaticListArgument("value", true, setting)
 
-	reporterNotifications := model.NewAutocompleteData(
-		subCommandReporter, "", "manage reporter notifications")
+	reporterNotifications := model.NewAutocompleteData(subCommandReporter, "", "manage reporter notifications")
 	reporterNotifications.AddStaticListArgument("value", true, setting)
 
-	watchingNotifications := model.NewAutocompleteData(
-		subCommandWatching, "", "manage watching notifications")
+	watchingNotifications := model.NewAutocompleteData(subCommandWatching, "", "manage watching notifications")
 	reporterNotifications.AddStaticListArgument("value", true, setting)
 	notifications.AddCommand(assigneeNotifications)
 	notifications.AddCommand(mentionNotifications)
@@ -609,7 +605,7 @@ func executeSettings(p *Plugin, c *plugin.Context, header *model.CommandArgs, ar
 		if conn.Settings != nil {
 			return p.responsef(header, "Current settings:\n%s", conn.Settings.String())
 		}
-		return p.responsef(header, "Please connect to jira account using command `/jira connect`")
+		return p.responsef(header, "Please connect to Jira account using the command `/jira connect`")
 	case "notifications":
 		return p.settingsNotifications(header, instance.GetID(), user.MattermostUserID, conn, args)
 	default:

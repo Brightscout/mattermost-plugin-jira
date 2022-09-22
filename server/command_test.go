@@ -24,13 +24,12 @@ import (
 )
 
 const (
-	mockUserIDWithNotifications       = "1"
-	mockUserIDWithoutNotifications    = "2"
-	mockUserIDUnknown                 = "3"
-	mockUserIDSysAdmin                = "4"
-	mockUserIDNonSysAdmin             = "5"
-	mattermostSiteURL                 = "https://somelink.com"
-	mockMattermostIDWithNotifications = "testMattermostUserId012345"
+	mockUserIDWithNotifications    = "1"
+	mockUserIDWithoutNotifications = "2"
+	mockUserIDUnknown              = "3"
+	mockUserIDSysAdmin             = "4"
+	mockUserIDNonSysAdmin          = "5"
+	mattermostSiteURL              = "https://somelink.com"
 )
 
 type mockUserStoreKV struct {
@@ -87,10 +86,9 @@ func getMockUserStoreKV() mockUserStoreKV {
 			mockUserIDWithoutNotifications: newuser(mockUserIDWithoutNotifications),
 		},
 		connections: map[types.ID]*Connection{
-			mockUserIDWithNotifications:       &withNotifications,
-			mockUserIDWithoutNotifications:    &connection,
-			"connected_user":                  &connection,
-			mockMattermostIDWithNotifications: &withNotifications,
+			mockUserIDWithNotifications:    &withNotifications,
+			mockUserIDWithoutNotifications: &connection,
+			"connected_user":               &connection,
 		},
 	}
 }

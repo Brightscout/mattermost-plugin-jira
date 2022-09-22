@@ -86,7 +86,7 @@ func (store mockUserStore) LoadConnection(types.ID, types.ID) (*Connection, erro
 	}, nil
 }
 func (store mockUserStore) LoadMattermostUserID(instanceID types.ID, jiraUserName string) (types.ID, error) {
-	return mockMattermostIDWithNotifications, nil
+	return mockUserIDWithNotifications, nil
 }
 func (store mockUserStore) DeleteConnection(instanceID, mattermostUserID types.ID) error {
 	return nil

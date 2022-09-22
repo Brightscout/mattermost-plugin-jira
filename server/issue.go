@@ -22,12 +22,15 @@ import (
 )
 
 const (
-	labelsField      = "labels"
-	statusField      = "status"
-	reporterField    = "reporter"
-	priorityField    = "priority"
-	descriptionField = "description"
-	resolutionField  = "resolution"
+	labelsField              = "labels"
+	statusField              = "status"
+	reporterField            = "reporter"
+	priorityField            = "priority"
+	descriptionField         = "description"
+	resolutionField          = "resolution"
+	createdCommentEvent      = "event_created_comment"
+	notificationTypeReporter = "reporter"
+	notificationTypeWatching = "watching"
 )
 
 func makePost(userID, channelID, message string) *model.Post {
@@ -519,22 +522,22 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	}
 
 	type option = utils.ReactSelectOption
-	projects := make([]option, 0, len(metaInfo.Projects))
+	projects := make([]option, len(metaInfo.Projects))
 	issues := make(map[string][]option, len(metaInfo.Projects))
-	for _, project := range metaInfo.Projects {
-		projects = append(projects, option{
+	for index, project := range metaInfo.Projects {
+		projects[index] = option{
 			Value: project.Key,
 			Label: project.Name,
-		})
-		issueTypes := make([]option, 0, len(project.IssueTypes))
-		for _, issue := range project.IssueTypes {
-			if issue.Subtasks {
+		}
+		issueTypes := make([]option, len(project.IssueTypes))
+		for index, issueType := range project.IssueTypes {
+			if issueType.Subtasks {
 				continue
 			}
-			issueTypes = append(issueTypes, option{
-				Value: issue.Id,
-				Label: issue.Name,
-			})
+			issueTypes[index] = option{
+				Value: issueType.Id,
+				Label: issueType.Name,
+			}
 		}
 		issues[project.Key] = issueTypes
 	}
@@ -1042,7 +1045,7 @@ func (p *Plugin) getClient(instanceID, mattermostUserID types.ID) (Client, Insta
 }
 
 func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
-	if !wh.eventTypes.ContainsAny("event_created_comment") {
+	if !wh.eventTypes.ContainsAny(createdCommentEvent) {
 		return
 	}
 
@@ -1051,6 +1054,7 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 	commentMessage := fmt.Sprintf("%s **commented** on %s:\n> %s", commentAuthor, jwhook.mdKeySummaryLink(), jwhook.Comment.Body)
 	client, connection, err := wh.fetchConnectedUser(p, instanceID)
 	if err != nil || client == nil {
+		p.errorf("error while fetching connected users for the instance id %v , err : %v", instanceID, err)
 		return
 	}
 
@@ -1067,7 +1071,7 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 			message:          commentMessage,
 			postType:         PostTypeComment,
 			commentSelf:      wh.JiraWebhook.Comment.Self,
-			notificationType: "watching",
+			notificationType: notificationTypeWatching,
 		}
 
 		wh.notifications = append(wh.notifications, whUserNotification)
@@ -1075,12 +1079,11 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 }
 
 func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, reporter *jira.User) {
-	if !wh.eventTypes.ContainsAny("event_created_comment") {
+	if !wh.eventTypes.ContainsAny(createdCommentEvent) {
 		return
 	}
 
 	jwhook := wh.JiraWebhook
-
 	if reporter == nil ||
 		(reporter.Name != "" && reporter.Name == jwhook.User.Name) ||
 		(reporter.AccountID != "" && reporter.AccountID == jwhook.Comment.UpdateAuthor.AccountID) {
@@ -1088,7 +1091,6 @@ func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, rep
 	}
 
 	commentAuthor := mdUser(&jwhook.Comment.UpdateAuthor)
-
 	commentMessage := fmt.Sprintf("%s **commented** on %s:\n> %s", commentAuthor, jwhook.mdKeySummaryLink(), jwhook.Comment.Body)
 
 	connection, err := p.GetUserSetting(wh, instanceID, reporter.Name, reporter.AccountID)
@@ -1102,7 +1104,7 @@ func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, rep
 		message:          commentMessage,
 		postType:         PostTypeComment,
 		commentSelf:      jwhook.Comment.Self,
-		notificationType: "reporter",
+		notificationType: notificationTypeReporter,
 	})
 }
 
