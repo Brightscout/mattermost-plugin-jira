@@ -1054,7 +1054,7 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 	commentMessage := fmt.Sprintf("%s **commented** on %s:\n> %s", commentAuthor, jwhook.mdKeySummaryLink(), jwhook.Comment.Body)
 	client, connection, err := wh.fetchConnectedUser(p, instanceID)
 	if err != nil || client == nil {
-		p.errorf("error while fetching connected users for the instance id %v , err : %v", instanceID, err)
+		p.errorf("error while fetching connected users for the instanceID %v , Error : %v", instanceID, err)
 		return
 	}
 
