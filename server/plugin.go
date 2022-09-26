@@ -48,10 +48,12 @@ const (
 	PluginRepo               = "https://github.com/mattermost/mattermost-plugin-jira"
 
 	// Endpoints
-	patternCommentLinkEndpoint  = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)[?](focusedCommentId)(=)(?P<comment_id>\d+)`
-	templateCommentLinkEndpoint = `/browse/${project_id}-${jira_id}?focusedCommentId=${comment_id})`
-	patternIssueLinkEndpoint    = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)`
-	templateIssueLinkEndpoint   = `/browse/${project_id}-${jira_id})`
+	patternCommentLinkEndpoint   = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)[?](focusedCommentId)(=)(?P<comment_id>\d+)`
+	templateCommentLinkEndpoint  = `/browse/${project_id}-${jira_id}?focusedCommentId=${comment_id})`
+	patternIssueLinkEndpoint     = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)`
+	templateIssueLinkEndpoint    = `/browse/${project_id}-${jira_id})`
+	templateViewIssue            = `[${project_id}-${jira_id}](`
+	templateViewIssueWithComment = `[${project_id}-${jira_id} (comment)](`
 )
 
 var BuildHash = ""
@@ -372,16 +374,17 @@ func (p *Plugin) AddAutolinksForCloudInstance(ci *cloudInstance) error {
 
 func (p *Plugin) AddAutolinks(projectList jira.ProjectList, baseURL string) error {
 	baseURL = strings.TrimRight(baseURL, "/")
+	var baseUrlReplaced = `(` + strings.ReplaceAll(baseURL, ".", `\.`)
 	installList := []autolink.Autolink{
 		{
 			Name:     "Jump to comment for " + baseURL,
-			Pattern:  `(` + strings.ReplaceAll(baseURL, ".", `\.`) + patternCommentLinkEndpoint,
-			Template: `[${project_id}-${jira_id} (comment)](` + baseURL + templateCommentLinkEndpoint,
+			Pattern:  baseUrlReplaced + patternCommentLinkEndpoint,
+			Template: templateViewIssueWithComment + baseURL + templateCommentLinkEndpoint,
 		},
 		{
 			Name:     "Link to key for " + baseURL,
-			Pattern:  `(` + strings.ReplaceAll(baseURL, ".", `\.`) + patternIssueLinkEndpoint,
-			Template: `[${project_id}-${jira_id}](` + baseURL + templateIssueLinkEndpoint,
+			Pattern:  baseUrlReplaced + patternIssueLinkEndpoint,
+			Template: templateViewIssue + baseURL + templateIssueLinkEndpoint,
 		},
 	}
 
