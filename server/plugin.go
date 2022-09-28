@@ -374,16 +374,16 @@ func (p *Plugin) AddAutolinksForCloudInstance(ci *cloudInstance) error {
 
 func (p *Plugin) AddAutolinks(projectList jira.ProjectList, baseURL string) error {
 	baseURL = strings.TrimRight(baseURL, "/")
-	var baseUrlReplaced = `(` + strings.ReplaceAll(baseURL, ".", `\.`)
+	var baseURLReplaced = `(` + strings.ReplaceAll(baseURL, ".", `\.`)
 	installList := []autolink.Autolink{
 		{
 			Name:     "Jump to comment for " + baseURL,
-			Pattern:  baseUrlReplaced + patternCommentLinkEndpoint,
+			Pattern:  baseURLReplaced + patternCommentLinkEndpoint,
 			Template: templateViewIssueWithComment + baseURL + templateCommentLinkEndpoint,
 		},
 		{
 			Name:     "Link to key for " + baseURL,
-			Pattern:  baseUrlReplaced + patternIssueLinkEndpoint,
+			Pattern:  baseURLReplaced + patternIssueLinkEndpoint,
 			Template: templateViewIssue + baseURL + templateIssueLinkEndpoint,
 		},
 	}
