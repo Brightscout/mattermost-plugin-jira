@@ -48,10 +48,11 @@ const (
 	PluginRepo               = "https://github.com/mattermost/mattermost-plugin-jira"
 
 	// Endpoints
-	patternCommentLinkEndpoint   = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)[?](focusedCommentId)(=)(?P<comment_id>\d+)`
-	templateCommentLinkEndpoint  = `/browse/${project_id}-${jira_id}?focusedCommentId=${comment_id})`
-	patternIssueLinkEndpoint     = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)`
-	templateIssueLinkEndpoint    = `/browse/${project_id}-${jira_id})`
+	patternCommentLinkEndpoint  = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)[?](focusedCommentId)(=)(?P<comment_id>\d+)`
+	templateCommentLinkEndpoint = `/browse/${project_id}-${jira_id}?focusedCommentId=${comment_id})`
+	patternIssueLinkEndpoint    = `/browse/)(?P<project_id>\w+)(-)(?P<jira_id>\d+)`
+	templateIssueLinkEndpoint   = `/browse/${project_id}-${jira_id})`
+
 	templateViewIssue            = `[${project_id}-${jira_id}](`
 	templateViewIssueWithComment = `[${project_id}-${jira_id} (comment)](`
 )
