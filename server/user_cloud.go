@@ -103,11 +103,13 @@ func (p *Plugin) httpACUserInteractive(w http.ResponseWriter, r *http.Request, i
 		},
 		// Set default settings the first time a user connects
 		Settings: &ConnectionSettings{
-			Notifications:                trueValue,
-			SendNotificationsForWatching: &trueValue,
-			SendNotificationsForMention:  &trueValue,
-			SendNotificationsForAssignee: &trueValue,
-			SendNotificationsForReporter: &trueValue,
+			Notifications: trueValue,
+			RoleNotification: map[string]*bool{
+				"mention":  &trueValue,
+				"assignee": &trueValue,
+				"reporter": &trueValue,
+				"watching": &trueValue,
+			},
 		},
 	}
 

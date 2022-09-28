@@ -72,11 +72,13 @@ func getMockUserStoreKV() mockUserStoreKV {
 	trueValue := true
 	withNotifications := connection // copy
 	withNotifications.Settings = &ConnectionSettings{
-		Notifications:                trueValue,
-		SendNotificationsForMention:  &trueValue,
-		SendNotificationsForAssignee: &trueValue,
-		SendNotificationsForReporter: &trueValue,
-		SendNotificationsForWatching: &trueValue,
+		Notifications: trueValue,
+		RoleNotification: map[string]*bool{
+			"assignee": &trueValue,
+			"mention":  &trueValue,
+			"reporter": &trueValue,
+			"watching": &trueValue,
+		},
 	}
 
 	return mockUserStoreKV{

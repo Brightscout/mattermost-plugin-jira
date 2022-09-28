@@ -105,11 +105,13 @@ func (p *Plugin) httpOAuth1aComplete(w http.ResponseWriter, r *http.Request, ins
 	trueValue := true
 	// Set default settings the first time a user connects
 	connection.Settings = &ConnectionSettings{
-		Notifications:                trueValue,
-		SendNotificationsForWatching: &trueValue,
-		SendNotificationsForMention:  &trueValue,
-		SendNotificationsForAssignee: &trueValue,
-		SendNotificationsForReporter: &trueValue,
+		Notifications: trueValue,
+		RoleNotification: map[string]*bool{
+			"mention":  &trueValue,
+			"assignee": &trueValue,
+			"reporter": &trueValue,
+			"watching": &trueValue,
+		},
 	}
 
 	err = p.connectUser(instance, types.ID(mattermostUserID), connection)
