@@ -13,14 +13,14 @@ const getPluginState = (state) => state['plugins-' + PluginId] || {};
 
 export const getPluginServerRoute = (state) => {
     const config = getConfig(state);
-    let baseUrl = config?.configSiteURL ? config.SiteUrl : window.location.href;
-    let basePath = new URL(baseUrl).pathname;
+    const baseUrl = new URL(config?.SiteURL ? config.SiteURL : window.location.href);
+    let basePath = baseUrl.pathname;
 
     if (basePath && basePath[basePath.length - 1] === '/') {
         basePath = basePath.substr(0, basePath.length - 1);
     }
 
-    return `${new URL(baseUrl).origin}${basePath}/plugins/${PluginId}`;
+    return `${baseUrl.origin}${basePath}/plugins/${PluginId}`;
 };
 
 export const getCurrentUserLocale = createSelector(
