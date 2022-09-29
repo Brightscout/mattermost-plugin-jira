@@ -73,11 +73,11 @@ func getMockUserStoreKV() mockUserStoreKV {
 	withNotifications := connection // copy
 	withNotifications.Settings = &ConnectionSettings{
 		Notifications: trueValue,
-		RoleNotification: map[string]*bool{
-			"assignee": &trueValue,
-			"mention":  &trueValue,
-			"reporter": &trueValue,
-			"watching": &trueValue,
+		RolesForDMNotification: map[string]*bool{
+			subCommandAssignee: &trueValue,
+			subCommandMention:  &trueValue,
+			subCommandReporter: &trueValue,
+			subCommandWatching: &trueValue,
 		},
 	}
 

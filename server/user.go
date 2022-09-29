@@ -43,8 +43,8 @@ func (c *Connection) JiraAccountID() types.ID {
 }
 
 type ConnectionSettings struct {
-	Notifications    bool `json:"notifications"`
-	RoleNotification map[string]*bool
+	Notifications          bool `json:"notifications"`
+	RolesForDMNotification map[string]*bool
 }
 
 func (s *ConnectionSettings) String() string {
@@ -53,19 +53,19 @@ func (s *ConnectionSettings) String() string {
 	reporterNotifications := "Notifications for reporter: off"
 	watchingNotifications := "Notifications for watching: off"
 
-	if s != nil && s.ShouldReceiveNotificationsFor("assignee") {
+	if s != nil && s.ShouldReceiveNotification(subCommandAssignee) {
 		assigneeNotifications = "Notifications for assignee: on"
 	}
 
-	if s != nil && s.ShouldReceiveNotificationsFor("mention") {
+	if s != nil && s.ShouldReceiveNotification(subCommandMention) {
 		mentionNotifications = "Notifications for mention: on"
 	}
 
-	if s != nil && s.ShouldReceiveNotificationsFor("reporter") {
+	if s != nil && s.ShouldReceiveNotification(subCommandReporter) {
 		reporterNotifications = "Notifications for reporter: on"
 	}
 
-	if s != nil && s.ShouldReceiveNotificationsFor("watching") {
+	if s != nil && s.ShouldReceiveNotification(subCommandWatching) {
 		watchingNotifications = "Notifications for watching: on"
 	}
 

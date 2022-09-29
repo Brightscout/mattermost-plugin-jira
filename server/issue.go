@@ -1094,7 +1094,7 @@ func (p *Plugin) applyReporterNotification(wh *webhook, instanceID types.ID, rep
 	commentMessage := fmt.Sprintf("%s **commented** on %s:\n> %s", commentAuthor, jwhook.mdKeySummaryLink(), jwhook.Comment.Body)
 
 	connection, err := p.GetUserSetting(wh, instanceID, reporter.Name, reporter.AccountID)
-	if err != nil || connection.Settings == nil || !connection.Settings.ShouldReceiveNotificationsFor("reporter") {
+	if err != nil || connection.Settings == nil || !connection.Settings.ShouldReceiveNotification(notificationTypeReporter) {
 		return
 	}
 
@@ -1131,8 +1131,8 @@ func (p *Plugin) GetUserSetting(wh *webhook, instanceID types.ID, jiraAccountID,
 	return connection, nil
 }
 
-func (s *ConnectionSettings) ShouldReceiveNotificationsFor(role string) bool {
-	if val, ok := s.RoleNotification[role]; ok {
+func (s *ConnectionSettings) ShouldReceiveNotification(role string) bool {
+	if val, ok := s.RolesForDMNotification[role]; ok {
 		return *val
 	}
 

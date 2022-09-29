@@ -138,7 +138,7 @@ func (wh *webhook) PostNotifications(p *Plugin, instanceID types.ID) ([]*model.P
 		}
 		// If this is a comment-related webhook, we need to check if they have permissions to read that.
 		// Otherwise, check if they can view the issue.
-		if !c.Settings.ShouldReceiveNotificationsFor(notification.notificationType) {
+		if !c.Settings.ShouldReceiveNotification(notification.notificationType) {
 			continue
 		}
 		if _, ok := mapForNotification[mattermostUserID]; ok {
