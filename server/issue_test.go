@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/kvstore"
+	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
 
 const (
@@ -275,6 +276,255 @@ func TestRouteShareIssuePublicly(t *testing.T) {
 			w := httptest.NewRecorder()
 			p.ServeHTTP(&plugin.Context{}, w, request)
 			assert.Equal(t, tt.expectedCode, w.Result().StatusCode, "no request data")
+		})
+	}
+}
+
+func TestShouldReceiveNotification(t *testing.T) {
+	s := ConnectionSettings{}
+	falseValue := false
+	tests := map[string]struct {
+		role         string
+		notification bool
+	}{
+		subCommandAssignee: {
+			role:         subCommandAssignee,
+			notification: falseValue,
+		},
+		subCommandMention: {
+			role:         subCommandMention,
+			notification: falseValue,
+		},
+		subCommandReporter: {
+			role:         subCommandReporter,
+			notification: falseValue,
+		},
+		subCommandWatching: {
+			role:         subCommandWatching,
+			notification: falseValue,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			val := s.ShouldReceiveNotification(
+				tt.role,
+			)
+			assert.Equal(t, tt.notification, val)
+		})
+	}
+
+}
+
+func TestFetchConnectedUser(t *testing.T) {
+	tests := map[string]struct {
+		p           *Plugin
+		instanceID  types.ID
+		client      Client
+		connection  *Connection
+		wh          webhook
+		expectedErr error
+	}{
+		"No Field": {
+			p: &Plugin{
+				instanceStore: mockInstanceStore{},
+				userStore:     mockUserStore{},
+			},
+			instanceID: testInstance1.InstanceID,
+			client:     nil,
+			connection: nil,
+			wh: webhook{
+				JiraWebhook: &JiraWebhook{
+					Issue: jira.Issue{},
+				},
+			},
+			expectedErr: nil,
+		},
+		"Success": {
+			p: &Plugin{
+				instanceStore: mockInstanceStore{},
+				userStore:     mockUserStore{},
+			},
+			instanceID: testInstance1.InstanceID,
+			client:     testClient{},
+			connection: &Connection{
+				Settings: &ConnectionSettings{
+					Notifications:          true,
+					RolesForDMNotification: nil,
+				},
+			},
+			wh: webhook{
+				JiraWebhook: &JiraWebhook{
+					Issue: jira.Issue{
+						Fields: &jira.IssueFields{
+							Creator: &jira.User{},
+						},
+					},
+				},
+			},
+			expectedErr: nil,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			client, connection, error := tt.wh.fetchConnectedUser(
+				tt.p,
+				tt.instanceID,
+			)
+			assert.Equal(t, tt.connection, connection)
+			assert.Equal(t, tt.client, client)
+			if tt.expectedErr != nil {
+				assert.Error(t, tt.expectedErr, error)
+			}
+		})
+	}
+}
+
+func TestApplyReporterNotification(t *testing.T) {
+	api := &plugintest.API{}
+
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
+
+	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	p := Plugin{}
+	p.SetAPI(api)
+	p.instanceStore = p.getMockInstanceStoreKV(1)
+	p.userStore = getMockUserStoreKV()
+
+	tests := map[string]struct {
+		wh         *webhook
+		instanceID types.ID
+		reporter   *jira.User
+	}{
+		"No reporter": {
+			wh: &webhook{
+				eventTypes: map[string]bool{
+					createdCommentEvent: true,
+				},
+				JiraWebhook: &JiraWebhook{
+					Comment: jira.Comment{
+						UpdateAuthor: jira.User{},
+					},
+					Issue: jira.Issue{
+						Key: "TEST-10",
+						Fields: &jira.IssueFields{
+							Type: jira.IssueType{
+								Name: "Story",
+							},
+							Summary: "",
+						},
+						Self: "Abc",
+					},
+				},
+				notifications: []webhookUserNotification{},
+			},
+			instanceID: testInstance1.InstanceID,
+			reporter:   nil,
+		},
+		"Success": {
+			wh: &webhook{
+				eventTypes: map[string]bool{
+					createdCommentEvent: true,
+				},
+				JiraWebhook: &JiraWebhook{
+					Comment: jira.Comment{
+						UpdateAuthor: jira.User{},
+					},
+					Issue: jira.Issue{
+						Key: "TEST-10",
+						Fields: &jira.IssueFields{
+							Type: jira.IssueType{
+								Name: "Story",
+							},
+							Summary: "",
+						},
+						Self: "Abc",
+					},
+				},
+				notifications: []webhookUserNotification{},
+			},
+			instanceID: testInstance1.InstanceID,
+			reporter:   &jira.User{},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			l1 := len(tt.wh.notifications)
+			p.applyReporterNotification(
+				tt.wh,
+				tt.instanceID,
+				tt.reporter,
+			)
+			if tt.reporter == nil {
+				assert.Equal(t, len(tt.wh.notifications)-l1, 0)
+			} else {
+				assert.Equal(t, len(tt.wh.notifications)-l1, 1)
+			}
+		})
+	}
+}
+
+func TestGetUserSetting(t *testing.T) {
+	api := &plugintest.API{}
+
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
+
+	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	p := Plugin{}
+	p.SetAPI(api)
+	p.instanceStore = p.getMockInstanceStoreKV(1)
+	p.userStore = getMockUserStoreKV()
+	trueValue := true
+
+	tests := map[string]struct {
+		wh            *webhook
+		instanceID    types.ID
+		jiraAccountID string
+		jiraUsername  string
+		connection    *Connection
+		expectedErr   error
+	}{
+		"No instanceID": {
+			wh:            &webhook{},
+			instanceID:    "",
+			jiraAccountID: "",
+			jiraUsername:  "",
+			connection:    nil,
+			expectedErr:   errors.New("NO InstanceID was found"),
+		},
+		"Success": {
+			wh:            &webhook{},
+			instanceID:    testInstance1.InstanceID,
+			jiraAccountID: "",
+			jiraUsername:  "",
+			connection: &Connection{
+				User: jira.User{
+					AccountID: "test",
+				},
+				Settings: &ConnectionSettings{
+					Notifications: trueValue,
+					RolesForDMNotification: (map[string]bool{
+						subCommandAssignee: trueValue,
+						subCommandMention:  trueValue,
+						subCommandReporter: trueValue,
+						subCommandWatching: trueValue,
+					}),
+				},
+			},
+			expectedErr: nil,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			connection, error := p.GetUserSetting(
+				tt.wh,
+				tt.instanceID,
+				tt.jiraAccountID,
+				tt.jiraUsername,
+			)
+			assert.Equal(t, tt.connection, connection)
+			if tt.expectedErr != nil {
+				assert.Error(t, tt.expectedErr, error)
+			}
 		})
 	}
 }

@@ -106,11 +106,11 @@ func (p *Plugin) httpOAuth1aComplete(w http.ResponseWriter, r *http.Request, ins
 	// Set default settings the first time a user connects
 	connection.Settings = &ConnectionSettings{
 		Notifications: trueValue,
-		RolesForDMNotification: map[string]*bool{
-			subCommandMention:  &trueValue,
-			subCommandAssignee: &trueValue,
-			subCommandReporter: &trueValue,
-			subCommandWatching: &trueValue,
+		RolesForDMNotification: map[string]bool{
+			subCommandMention:  trueValue,
+			subCommandAssignee: trueValue,
+			subCommandReporter: trueValue,
+			subCommandWatching: trueValue,
 		},
 	}
 

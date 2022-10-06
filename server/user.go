@@ -44,7 +44,7 @@ func (c *Connection) JiraAccountID() types.ID {
 
 type ConnectionSettings struct {
 	Notifications          bool `json:"notifications"`
-	RolesForDMNotification map[string]*bool
+	RolesForDMNotification map[string]bool
 }
 
 func (s *ConnectionSettings) String() string {
