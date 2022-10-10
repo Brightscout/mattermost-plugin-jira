@@ -281,19 +281,24 @@ func TestRouteShareIssuePublicly(t *testing.T) {
 }
 
 func TestShouldReceiveNotification(t *testing.T) {
-	s := ConnectionSettings{}
+	cs := ConnectionSettings{}
+	cs.RolesForDMNotification = make(map[string]bool)
+	cs.RolesForDMNotification[subCommandAssignee] = true
+	cs.RolesForDMNotification[subCommandMention] = true
 	falseValue := false
+	trueValue := true
 	tests := map[string]struct {
-		role         string
-		notification bool
+		role                   string
+		notification           bool
+		RolesForDMNotification map[string]bool
 	}{
 		subCommandAssignee: {
 			role:         subCommandAssignee,
-			notification: falseValue,
+			notification: trueValue,
 		},
 		subCommandMention: {
 			role:         subCommandMention,
-			notification: falseValue,
+			notification: trueValue,
 		},
 		subCommandReporter: {
 			role:         subCommandReporter,
@@ -306,7 +311,7 @@ func TestShouldReceiveNotification(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			val := s.ShouldReceiveNotification(
+			val := cs.ShouldReceiveNotification(
 				tt.role,
 			)
 			assert.Equal(t, tt.notification, val)
@@ -316,19 +321,24 @@ func TestShouldReceiveNotification(t *testing.T) {
 }
 
 func TestFetchConnectedUser(t *testing.T) {
+	api := &plugintest.API{}
+
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
+
+	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	p := &Plugin{}
+	p.SetAPI(api)
+	p.instanceStore = p.getMockInstanceStoreKV(1)
+	p.userStore = getMockUserStoreKV()
+	trueValue := true
 	tests := map[string]struct {
-		p           *Plugin
 		instanceID  types.ID
 		client      Client
 		connection  *Connection
 		wh          webhook
 		expectedErr error
 	}{
-		"No Field": {
-			p: &Plugin{
-				instanceStore: mockInstanceStore{},
-				userStore:     mockUserStore{},
-			},
+		"Issue Feild not found": {
 			instanceID: testInstance1.InstanceID,
 			client:     nil,
 			connection: nil,
@@ -339,17 +349,36 @@ func TestFetchConnectedUser(t *testing.T) {
 			},
 			expectedErr: nil,
 		},
-		"Success": {
-			p: &Plugin{
-				instanceStore: mockInstanceStore{},
-				userStore:     mockUserStore{},
+		"Unable to load instance": {
+			instanceID: "instanceID",
+			client:     nil,
+			connection: nil,
+			wh: webhook{
+				JiraWebhook: &JiraWebhook{
+					Issue: jira.Issue{
+						Fields: &jira.IssueFields{
+							Creator: &jira.User{},
+						},
+					},
+				},
 			},
+			expectedErr: errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
+		},
+		"Success": {
 			instanceID: testInstance1.InstanceID,
 			client:     testClient{},
 			connection: &Connection{
 				Settings: &ConnectionSettings{
-					Notifications:          true,
-					RolesForDMNotification: nil,
+					Notifications: trueValue,
+					RolesForDMNotification: map[string]bool{
+						subCommandAssignee: trueValue,
+						subCommandMention:  trueValue,
+						subCommandReporter: trueValue,
+						subCommandWatching: trueValue,
+					},
+				},
+				User: jira.User{
+					AccountID: "test",
 				},
 			},
 			wh: webhook{
@@ -367,7 +396,7 @@ func TestFetchConnectedUser(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			client, connection, error := tt.wh.fetchConnectedUser(
-				tt.p,
+				p,
 				tt.instanceID,
 			)
 			assert.Equal(t, tt.connection, connection)
@@ -389,75 +418,56 @@ func TestApplyReporterNotification(t *testing.T) {
 	p.SetAPI(api)
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 	p.userStore = getMockUserStoreKV()
-
+	wh := &webhook{
+		eventTypes: map[string]bool{
+			createdCommentEvent: true,
+		},
+		JiraWebhook: &JiraWebhook{
+			Comment: jira.Comment{
+				UpdateAuthor: jira.User{},
+			},
+			Issue: jira.Issue{
+				Key: "TEST-10",
+				Fields: &jira.IssueFields{
+					Type: jira.IssueType{
+						Name: "Story",
+					},
+					Summary: "",
+				},
+				Self: "Abc",
+			},
+		},
+		notifications: []webhookUserNotification{},
+	}
 	tests := map[string]struct {
-		wh         *webhook
 		instanceID types.ID
 		reporter   *jira.User
 	}{
+		"Unable to load instance": {
+			instanceID: "instanceID",
+			reporter:   &jira.User{},
+		},
 		"No reporter": {
-			wh: &webhook{
-				eventTypes: map[string]bool{
-					createdCommentEvent: true,
-				},
-				JiraWebhook: &JiraWebhook{
-					Comment: jira.Comment{
-						UpdateAuthor: jira.User{},
-					},
-					Issue: jira.Issue{
-						Key: "TEST-10",
-						Fields: &jira.IssueFields{
-							Type: jira.IssueType{
-								Name: "Story",
-							},
-							Summary: "",
-						},
-						Self: "Abc",
-					},
-				},
-				notifications: []webhookUserNotification{},
-			},
 			instanceID: testInstance1.InstanceID,
 			reporter:   nil,
 		},
 		"Success": {
-			wh: &webhook{
-				eventTypes: map[string]bool{
-					createdCommentEvent: true,
-				},
-				JiraWebhook: &JiraWebhook{
-					Comment: jira.Comment{
-						UpdateAuthor: jira.User{},
-					},
-					Issue: jira.Issue{
-						Key: "TEST-10",
-						Fields: &jira.IssueFields{
-							Type: jira.IssueType{
-								Name: "Story",
-							},
-							Summary: "",
-						},
-						Self: "Abc",
-					},
-				},
-				notifications: []webhookUserNotification{},
-			},
 			instanceID: testInstance1.InstanceID,
 			reporter:   &jira.User{},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			l1 := len(tt.wh.notifications)
+			totalNotifications := len(wh.notifications)
 			p.applyReporterNotification(
-				tt.wh,
+				wh,
 				tt.instanceID,
 				tt.reporter,
 			)
-			if tt.reporter == nil {
-				assert.Equal(t, len(tt.wh.notifications)-l1, 0)
+			if tt.reporter == nil || tt.instanceID == "instanceID" {
+				assert.Equal(t, len(wh.notifications)-totalNotifications, 0)
 			} else {
-				assert.Equal(t, len(tt.wh.notifications)-l1, 1)
+				assert.Equal(t, len(wh.notifications)-totalNotifications, 1)
 			}
 		})
 	}
@@ -483,13 +493,13 @@ func TestGetUserSetting(t *testing.T) {
 		connection    *Connection
 		expectedErr   error
 	}{
-		"No instanceID": {
+		"Unable to load instance": {
 			wh:            &webhook{},
-			instanceID:    "",
+			instanceID:    "instanceID",
 			jiraAccountID: "",
 			jiraUsername:  "",
 			connection:    nil,
-			expectedErr:   errors.New("NO InstanceID was found"),
+			expectedErr:   errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
 		},
 		"Success": {
 			wh:            &webhook{},
