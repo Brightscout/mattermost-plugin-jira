@@ -285,8 +285,6 @@ func TestShouldReceiveNotification(t *testing.T) {
 	cs.RolesForDMNotification = make(map[string]bool)
 	cs.RolesForDMNotification[subCommandAssignee] = true
 	cs.RolesForDMNotification[subCommandMention] = true
-	falseValue := false
-	trueValue := true
 	tests := map[string]struct {
 		role                   string
 		notification           bool
@@ -294,26 +292,24 @@ func TestShouldReceiveNotification(t *testing.T) {
 	}{
 		subCommandAssignee: {
 			role:         subCommandAssignee,
-			notification: trueValue,
+			notification: true,
 		},
 		subCommandMention: {
 			role:         subCommandMention,
-			notification: trueValue,
+			notification: true,
 		},
 		subCommandReporter: {
 			role:         subCommandReporter,
-			notification: falseValue,
+			notification: false,
 		},
 		subCommandWatching: {
 			role:         subCommandWatching,
-			notification: falseValue,
+			notification: false,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			val := cs.ShouldReceiveNotification(
-				tt.role,
-			)
+			val := cs.ShouldReceiveNotification(tt.role)
 			assert.Equal(t, tt.notification, val)
 		})
 	}
@@ -330,7 +326,6 @@ func TestFetchConnectedUser(t *testing.T) {
 	p.SetAPI(api)
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 	p.userStore = getMockUserStoreKV()
-	trueValue := true
 	tests := map[string]struct {
 		instanceID  types.ID
 		client      Client
@@ -369,12 +364,12 @@ func TestFetchConnectedUser(t *testing.T) {
 			client:     testClient{},
 			connection: &Connection{
 				Settings: &ConnectionSettings{
-					Notifications: trueValue,
+					Notifications: true,
 					RolesForDMNotification: map[string]bool{
-						subCommandAssignee: trueValue,
-						subCommandMention:  trueValue,
-						subCommandReporter: trueValue,
-						subCommandWatching: trueValue,
+						subCommandAssignee: true,
+						subCommandMention:  true,
+						subCommandReporter: true,
+						subCommandWatching: true,
 					},
 				},
 				User: jira.User{
@@ -419,9 +414,7 @@ func TestApplyReporterNotification(t *testing.T) {
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 	p.userStore = getMockUserStoreKV()
 	wh := &webhook{
-		eventTypes: map[string]bool{
-			createdCommentEvent: true,
-		},
+		eventTypes: map[string]bool{createdCommentEvent: true},
 		JiraWebhook: &JiraWebhook{
 			Comment: jira.Comment{
 				UpdateAuthor: jira.User{},
@@ -483,7 +476,6 @@ func TestGetUserSetting(t *testing.T) {
 	p.SetAPI(api)
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 	p.userStore = getMockUserStoreKV()
-	trueValue := true
 
 	tests := map[string]struct {
 		wh            *webhook
@@ -507,16 +499,14 @@ func TestGetUserSetting(t *testing.T) {
 			jiraAccountID: "",
 			jiraUsername:  "",
 			connection: &Connection{
-				User: jira.User{
-					AccountID: "test",
-				},
+				User: jira.User{AccountID: "test"},
 				Settings: &ConnectionSettings{
-					Notifications: trueValue,
+					Notifications: true,
 					RolesForDMNotification: (map[string]bool{
-						subCommandAssignee: trueValue,
-						subCommandMention:  trueValue,
-						subCommandReporter: trueValue,
-						subCommandWatching: trueValue,
+						subCommandAssignee: true,
+						subCommandMention:  true,
+						subCommandReporter: true,
+						subCommandWatching: true,
 					}),
 				},
 			},
