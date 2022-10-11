@@ -11,32 +11,30 @@ import (
 )
 
 func TestUserSettings_String(t *testing.T) {
-	valueTrue := true
-	valueFalse := false
 	tests := map[string]struct {
 		settings       ConnectionSettings
 		expectedOutput string
 	}{
 		"notifications on": {
 			settings: ConnectionSettings{
-				Notifications: valueTrue,
+				Notifications: true,
 				RolesForDMNotification: map[string]bool{
-					subCommandAssignee: valueTrue,
-					subCommandMention:  valueTrue,
-					subCommandReporter: valueTrue,
-					subCommandWatching: valueTrue,
+					subCommandAssignee: true,
+					subCommandMention:  true,
+					subCommandReporter: true,
+					subCommandWatching: true,
 				},
 			},
 			expectedOutput: "\t- Notifications for assignee: on \n\t- Notifications for mention: on \n\t- Notifications for reporter: on \n\t- Notifications for watching: on",
 		},
 		"notifications off": {
 			settings: ConnectionSettings{
-				Notifications: valueFalse,
+				Notifications: false,
 				RolesForDMNotification: map[string]bool{
-					subCommandAssignee: valueFalse,
-					subCommandMention:  valueFalse,
-					subCommandReporter: valueFalse,
-					subCommandWatching: valueFalse,
+					subCommandAssignee: false,
+					subCommandMention:  false,
+					subCommandReporter: false,
+					subCommandWatching: false,
 				},
 			},
 			expectedOutput: "\t- Notifications for assignee: off \n\t- Notifications for mention: off \n\t- Notifications for reporter: off \n\t- Notifications for watching: off",

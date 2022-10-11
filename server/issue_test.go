@@ -333,32 +333,6 @@ func TestFetchConnectedUser(t *testing.T) {
 		wh          webhook
 		expectedErr error
 	}{
-		"Issue Feild not found": {
-			instanceID: testInstance1.InstanceID,
-			client:     nil,
-			connection: nil,
-			wh: webhook{
-				JiraWebhook: &JiraWebhook{
-					Issue: jira.Issue{},
-				},
-			},
-			expectedErr: nil,
-		},
-		"Unable to load instance": {
-			instanceID: "instanceID",
-			client:     nil,
-			connection: nil,
-			wh: webhook{
-				JiraWebhook: &JiraWebhook{
-					Issue: jira.Issue{
-						Fields: &jira.IssueFields{
-							Creator: &jira.User{},
-						},
-					},
-				},
-			},
-			expectedErr: errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
-		},
 		"Success": {
 			instanceID: testInstance1.InstanceID,
 			client:     testClient{},
@@ -373,7 +347,7 @@ func TestFetchConnectedUser(t *testing.T) {
 					},
 				},
 				User: jira.User{
-					AccountID: "test",
+					AccountID: "test-AccountID",
 				},
 			},
 			wh: webhook{
@@ -387,13 +361,36 @@ func TestFetchConnectedUser(t *testing.T) {
 			},
 			expectedErr: nil,
 		},
+		"Issue Field not found": {
+			instanceID: testInstance1.InstanceID,
+			client:     nil,
+			connection: nil,
+			wh: webhook{
+				JiraWebhook: &JiraWebhook{
+					Issue: jira.Issue{},
+				},
+			},
+			expectedErr: nil,
+		},
+		"Unable to load instance": {
+			instanceID: "test-instanceID",
+			client:     nil,
+			connection: nil,
+			wh: webhook{
+				JiraWebhook: &JiraWebhook{
+					Issue: jira.Issue{
+						Fields: &jira.IssueFields{
+							Creator: &jira.User{},
+						},
+					},
+				},
+			},
+			expectedErr: errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			client, connection, error := tt.wh.fetchConnectedUser(
-				p,
-				tt.instanceID,
-			)
+			client, connection, error := tt.wh.fetchConnectedUser(p, tt.instanceID)
 			assert.Equal(t, tt.connection, connection)
 			assert.Equal(t, tt.client, client)
 			if tt.expectedErr != nil {
@@ -436,17 +433,17 @@ func TestApplyReporterNotification(t *testing.T) {
 		instanceID types.ID
 		reporter   *jira.User
 	}{
-		"Unable to load instance": {
-			instanceID: "instanceID",
-			reporter:   &jira.User{},
-		},
-		"No reporter": {
-			instanceID: testInstance1.InstanceID,
-			reporter:   nil,
-		},
 		"Success": {
 			instanceID: testInstance1.InstanceID,
 			reporter:   &jira.User{},
+		},
+		"Unable to load instance": {
+			instanceID: "test-instanceID",
+			reporter:   &jira.User{},
+		},
+		"Reporter is nil": {
+			instanceID: testInstance1.InstanceID,
+			reporter:   nil,
 		},
 	}
 	for name, tt := range tests {
@@ -457,10 +454,10 @@ func TestApplyReporterNotification(t *testing.T) {
 				tt.instanceID,
 				tt.reporter,
 			)
-			if tt.reporter == nil || tt.instanceID == "instanceID" {
-				assert.Equal(t, len(wh.notifications)-totalNotifications, 0)
+			if tt.reporter == nil || tt.instanceID == "test-instanceID" {
+				assert.Equal(t, len(wh.notifications), totalNotifications)
 			} else {
-				assert.Equal(t, len(wh.notifications)-totalNotifications, 1)
+				assert.Equal(t, len(wh.notifications), 1+totalNotifications)
 			}
 		})
 	}
@@ -474,32 +471,22 @@ func TestGetUserSetting(t *testing.T) {
 	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
+	jiraAccountID := "test-jiraAccountID"
+	jiraUsername := "test-jiraUsername"
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 	p.userStore = getMockUserStoreKV()
 
 	tests := map[string]struct {
-		wh            *webhook
-		instanceID    types.ID
-		jiraAccountID string
-		jiraUsername  string
-		connection    *Connection
-		expectedErr   error
+		wh          *webhook
+		instanceID  types.ID
+		connection  *Connection
+		expectedErr error
 	}{
-		"Unable to load instance": {
-			wh:            &webhook{},
-			instanceID:    "instanceID",
-			jiraAccountID: "",
-			jiraUsername:  "",
-			connection:    nil,
-			expectedErr:   errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
-		},
 		"Success": {
-			wh:            &webhook{},
-			instanceID:    testInstance1.InstanceID,
-			jiraAccountID: "",
-			jiraUsername:  "",
+			wh:         &webhook{},
+			instanceID: testInstance1.InstanceID,
 			connection: &Connection{
-				User: jira.User{AccountID: "test"},
+				User: jira.User{AccountID: "test-AccountID"},
 				Settings: &ConnectionSettings{
 					Notifications: true,
 					RolesForDMNotification: (map[string]bool{
@@ -512,15 +499,16 @@ func TestGetUserSetting(t *testing.T) {
 			},
 			expectedErr: nil,
 		},
+		"Unable to load instance": {
+			wh:          &webhook{},
+			instanceID:  "instanceID",
+			connection:  nil,
+			expectedErr: errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
+		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			connection, error := p.GetUserSetting(
-				tt.wh,
-				tt.instanceID,
-				tt.jiraAccountID,
-				tt.jiraUsername,
-			)
+			connection, error := p.GetUserSetting(tt.wh, tt.instanceID, jiraAccountID, jiraUsername)
 			assert.Equal(t, tt.connection, connection)
 			if tt.expectedErr != nil {
 				assert.Error(t, tt.expectedErr, error)

@@ -102,15 +102,14 @@ func (p *Plugin) httpOAuth1aComplete(w http.ResponseWriter, r *http.Request, ins
 		return http.StatusInternalServerError, err
 	}
 	connection.User = *juser
-	trueValue := true
 	// Set default settings the first time a user connects
 	connection.Settings = &ConnectionSettings{
-		Notifications: trueValue,
+		Notifications: true,
 		RolesForDMNotification: map[string]bool{
-			subCommandMention:  trueValue,
-			subCommandAssignee: trueValue,
-			subCommandReporter: trueValue,
-			subCommandWatching: trueValue,
+			subCommandMention:  true,
+			subCommandAssignee: true,
+			subCommandReporter: true,
+			subCommandWatching: true,
 		},
 	}
 

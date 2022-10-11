@@ -65,19 +65,18 @@ func getMockUserStoreKV() mockUserStoreKV {
 
 	connection := Connection{
 		User: jira.User{
-			AccountID: "test",
+			AccountID: "test-AccountID",
 		},
 	}
 
-	trueValue := true
 	withNotifications := connection // copy
 	withNotifications.Settings = &ConnectionSettings{
-		Notifications: trueValue,
+		Notifications: true,
 		RolesForDMNotification: map[string]bool{
-			subCommandAssignee: trueValue,
-			subCommandMention:  trueValue,
-			subCommandReporter: trueValue,
-			subCommandWatching: trueValue,
+			subCommandAssignee: true,
+			subCommandMention:  true,
+			subCommandReporter: true,
+			subCommandWatching: true,
 		},
 	}
 
