@@ -55,85 +55,94 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 	if err != nil {
 		return nil, err
 	}
+
 	v1, err := version.NewVersion(v.VersionInfo)
 	if err != nil {
 		return nil, err
 	}
+
 	v2, err := version.NewVersion("8.4.0")
 	if err != nil {
 		return nil, err
 	}
+
+	var info *jira.CreateMetaInfo
+	var response *jira.Response
 	if v1.LessThan(v2) {
-		cimd, resp, err := client.Jira.Issue.GetCreateMetaWithOptions(options)
-		if err != nil {
-			if resp == nil {
-				return nil, err
+		cimd, resp, error := client.Jira.Issue.GetCreateMetaWithOptions(options)
+		info = cimd
+		response = resp
+		err = error
+	} else {
+		cd, resp, err := client.Jira.Project.ListWithOptions(options)
+		meta := new(jira.CreateMetaInfo)
+
+		if err == nil {
+			for i := 0; i < len(*cd); i++ {
+				meta.Expand = (*cd)[i].Expand
+				project := new(jira.MetaProject)
+				project.Self = (*cd)[i].Self
+				project.Id = (*cd)[i].ID
+				project.Key = (*cd)[i].Key
+				project.Name = (*cd)[i].Name
+				apiEndpoint := "rest/api/2/issue/createmeta/" + (*cd)[i].ID + "/issuetypes"
+				req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
+				if err != nil {
+					break
+				}
+
+				issues := new(IssueInfo)
+				resp, err = client.Jira.Do(req, issues)
+				if err != nil {
+					break
+				}
+
+				project.IssueTypes = issues.Values
+				for j := 0; j < len(project.IssueTypes); j++ {
+					apiEndpoint := "rest/api/2/issue/createmeta/" + (*cd)[i].ID + "/issuetypes/" + project.IssueTypes[j].Id
+					req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
+					if err != nil {
+						break
+					}
+
+					field := new(FieldInfo)
+					resp, err = client.Jira.Do(req, field)
+					if err != nil {
+						break
+					}
+
+					fieldId := new(FieldId)
+					resp, err = client.Jira.Do(req, fieldId)
+					if err != nil {
+						break
+					}
+
+					newMap := make(map[string]interface{})
+					for k := 0; k < len(field.Values); k++ {
+						newMap[fieldId.Values[k].Id] = field.Values[k]
+					}
+					project.IssueTypes[j].Fields = newMap
+				}
+				proj := meta.Projects
+				proj = append(proj, project)
+				meta.Projects = proj
 			}
-			resp.Body.Close()
-			if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
-				err = errors.New("not authorized to create issues")
-			}
-			return nil, RESTError{err, resp.StatusCode}
 		}
-		return cimd, nil
+		info = meta
+		response = resp
 	}
-	cd, resp, err := client.Jira.Project.ListWithOptions(options)
-	meta := new(jira.CreateMetaInfo)
-	for i := 0; i < len(*cd); i++ {
-		meta.Expand = (*cd)[i].Expand
-		project := new(jira.MetaProject)
-		project.Self = (*cd)[i].Self
-		project.Id = (*cd)[i].ID
-		project.Key = (*cd)[i].Key
-		project.Name = (*cd)[i].Name
-		apiEndpoint := "rest/api/2/issue/createmeta/" + (*cd)[i].ID + "/issuetypes"
-		req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
-		if err != nil {
-			break
-		}
-		issues := new(IssueInfo)
-		resp, err = client.Jira.Do(req, issues)
-		if err != nil {
-			break
-		}
-		project.IssueTypes = issues.Values
-		for j := 0; j < len(project.IssueTypes); j++ {
-			apiEndpoint := "rest/api/2/issue/createmeta/" + (*cd)[i].ID + "/issuetypes/" + project.IssueTypes[j].Id
-			req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
-			if err != nil {
-				break
-			}
-			field := new(FieldInfo)
-			resp, err = client.Jira.Do(req, field)
-			if err != nil {
-				break
-			}
-			fieldId := new(FieldId)
-			resp, err = client.Jira.Do(req, fieldId)
-			if err != nil {
-				break
-			}
-			newMap := make(map[string]interface{})
-			for k := 0; k < len(field.Values); k++ {
-				newMap[fieldId.Values[k].Id] = field.Values[k]
-			}
-			project.IssueTypes[j].Fields = newMap
-		}
-		proj := meta.Projects
-		proj = append(proj, project)
-		meta.Projects = proj
-	}
+
 	if err != nil {
-		if resp == nil {
+		if response == nil {
 			return nil, err
 		}
-		resp.Body.Close()
-		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
+		response.Body.Close()
+		if response.StatusCode == http.StatusForbidden || response.StatusCode == http.StatusUnauthorized {
 			err = errors.New("not authorized to create issues")
 		}
-		return nil, RESTError{err, resp.StatusCode}
+		return nil, RESTError{err, response.StatusCode}
 	}
-	return meta, nil
+	return info, nil
 }
 
 // SearchUsersAssignableToIssue finds all users that can be assigned to an issue.
