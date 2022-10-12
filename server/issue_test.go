@@ -286,9 +286,8 @@ func TestShouldReceiveNotification(t *testing.T) {
 	cs.RolesForDMNotification[subCommandAssignee] = true
 	cs.RolesForDMNotification[subCommandMention] = true
 	tests := map[string]struct {
-		role                   string
-		notification           bool
-		RolesForDMNotification map[string]bool
+		role         string
+		notification bool
 	}{
 		subCommandAssignee: {
 			role:         subCommandAssignee,
@@ -417,14 +416,14 @@ func TestApplyReporterNotification(t *testing.T) {
 				UpdateAuthor: jira.User{},
 			},
 			Issue: jira.Issue{
-				Key: "TEST-10",
+				Key: "test-key",
 				Fields: &jira.IssueFields{
 					Type: jira.IssueType{
 						Name: "Story",
 					},
 					Summary: "",
 				},
-				Self: "Abc",
+				Self: "test-self",
 			},
 		},
 		notifications: []webhookUserNotification{},
@@ -449,11 +448,7 @@ func TestApplyReporterNotification(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			totalNotifications := len(wh.notifications)
-			p.applyReporterNotification(
-				wh,
-				tt.instanceID,
-				tt.reporter,
-			)
+			p.applyReporterNotification(wh, tt.instanceID, tt.reporter)
 			if tt.reporter == nil || tt.instanceID == "test-instanceID" {
 				assert.Equal(t, len(wh.notifications), totalNotifications)
 			} else {
