@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	jira "github.com/andygrunwald/go-jira"
@@ -32,96 +33,106 @@ type FieldInfo struct {
 }
 
 type FieldValues struct {
-	Id string `json:"fieldId,omitempty"`
+	FieldID string `json:"fieldId,omitempty"`
 }
 
 type FieldId struct {
 	Values []FieldValues `json:"values,omitempty"`
 }
+
 type Version struct {
 	VersionInfo string `json:"version,omitempty"`
 }
 
+const (
+	CreateMetaAPIEndpoint = "rest/api/2/issue/createmeta/"
+	PivotVersion          = "8.4.0"
+)
+
 // GetCreateMeta returns the metadata needed to implement the UI and validation of
 // creating new Jira issues.
 func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, error) {
-	apiEndpoint := "rest/api/2/serverInfo"
+	ServerInfoApiEndpoint := "rest/api/2/serverInfo"
 	v := new(Version)
-	req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
+	req, err := client.Jira.NewRequest(http.MethodGet, ServerInfoApiEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}
+
 	_, err = client.Jira.Do(req, v)
 	if err != nil {
 		return nil, err
 	}
 
-	v1, err := version.NewVersion(v.VersionInfo)
+	currentVersion, err := version.NewVersion(v.VersionInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	v2, err := version.NewVersion("8.4.0")
+	pivotVersion, err := version.NewVersion(PivotVersion)
 	if err != nil {
 		return nil, err
 	}
 
 	var info *jira.CreateMetaInfo
-	var response *jira.Response
-	if v1.LessThan(v2) {
-		cimd, resp, error := client.Jira.Issue.GetCreateMetaWithOptions(options)
+	var resp *jira.Response
+	if currentVersion.LessThan(pivotVersion) {
+		cimd, response, error := client.Jira.Issue.GetCreateMetaWithOptions(options)
 		info = cimd
-		response = resp
+		resp = response
 		err = error
 	} else {
-		cd, resp, err := client.Jira.Project.ListWithOptions(options)
+		cd, response, err := client.Jira.Project.ListWithOptions(options)
 		meta := new(jira.CreateMetaInfo)
 
 		if err == nil {
 			for i := 0; i < len(*cd); i++ {
 				meta.Expand = (*cd)[i].Expand
-				project := new(jira.MetaProject)
-				project.Self = (*cd)[i].Self
-				project.Id = (*cd)[i].ID
-				project.Key = (*cd)[i].Key
-				project.Name = (*cd)[i].Name
-				apiEndpoint := "rest/api/2/issue/createmeta/" + (*cd)[i].ID + "/issuetypes"
-				req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
+				apiEndpoint := fmt.Sprintf("%s%s/issuetypes", CreateMetaAPIEndpoint, (*cd)[i].ID)
+				req, err := client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
 				if err != nil {
 					break
 				}
 
 				issues := new(IssueInfo)
-				resp, err = client.Jira.Do(req, issues)
+				response, err = client.Jira.Do(req, issues)
 				if err != nil {
 					break
 				}
 
-				project.IssueTypes = issues.Values
-				for j := 0; j < len(project.IssueTypes); j++ {
-					apiEndpoint := "rest/api/2/issue/createmeta/" + (*cd)[i].ID + "/issuetypes/" + project.IssueTypes[j].Id
-					req, err := client.Jira.NewRequest("GET", apiEndpoint, nil)
+				project := &jira.MetaProject{
+					Expand:     (*cd)[i].Expand,
+					Self:       (*cd)[i].Self,
+					Id:         (*cd)[i].ID,
+					Key:        (*cd)[i].Key,
+					Name:       (*cd)[i].Name,
+					IssueTypes: issues.Values,
+				}
+
+				for _, issue := range project.IssueTypes {
+					apiEndpoint := fmt.Sprintf("%s%s/issuetypes/%s", CreateMetaAPIEndpoint, (*cd)[i].ID, issue.Id)
+					req, err := client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
 					if err != nil {
 						break
 					}
 
 					field := new(FieldInfo)
-					resp, err = client.Jira.Do(req, field)
+					response, err = client.Jira.Do(req, field)
 					if err != nil {
 						break
 					}
 
-					fieldId := new(FieldId)
-					resp, err = client.Jira.Do(req, fieldId)
+					fieldID := new(FieldId)
+					response, err = client.Jira.Do(req, fieldID)
 					if err != nil {
 						break
 					}
 
-					newMap := make(map[string]interface{})
-					for k := 0; k < len(field.Values); k++ {
-						newMap[fieldId.Values[k].Id] = field.Values[k]
+					fieldMap := make(map[string]interface{})
+					for f, fieldValue := range field.Values {
+						fieldMap[fieldID.Values[f].FieldID] = fieldValue
 					}
-					project.IssueTypes[j].Fields = newMap
+					issue.Fields = fieldMap
 				}
 				proj := meta.Projects
 				proj = append(proj, project)
@@ -129,18 +140,18 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 			}
 		}
 		info = meta
-		response = resp
+		resp = response
 	}
 
 	if err != nil {
-		if response == nil {
+		if resp == nil {
 			return nil, err
 		}
-		response.Body.Close()
-		if response.StatusCode == http.StatusForbidden || response.StatusCode == http.StatusUnauthorized {
+		resp.Body.Close()
+		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
 			err = errors.New("not authorized to create issues")
 		}
-		return nil, RESTError{err, response.StatusCode}
+		return nil, RESTError{err, resp.StatusCode}
 	}
 	return info, nil
 }
