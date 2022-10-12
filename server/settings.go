@@ -24,6 +24,9 @@ func (connection *Connection) sendNotification(role string, hasNotification bool
 	if role != subCommandAssignee && role != subCommandMention && role != subCommandReporter && role != subCommandWatching {
 		return false
 	}
+	if connection.Settings.RolesForDMNotification == nil {
+		connection.Settings.RolesForDMNotification = make(map[string]bool)
+	}
 	connection.Settings.RolesForDMNotification[role] = hasNotification
 	return true
 }
