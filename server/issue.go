@@ -1161,6 +1161,7 @@ func (p *Plugin) fetchConnectedUserFromAccount(account map[string]string, instan
 	if err != nil {
 		return nil, connection, err
 	}
+
 	return client, connection, nil
 }
 

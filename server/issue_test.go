@@ -84,6 +84,16 @@ func (client testClient) AddComment(issueKey string, comment *jira.Comment) (*ji
 
 	return nil, nil
 }
+func setupTestPlugin(api *plugintest.API) *Plugin {
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
+
+	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	p := &Plugin{}
+	p.SetAPI(api)
+	p.instanceStore = p.getMockInstanceStoreKV(1)
+	p.userStore = getMockUserStoreKV()
+	return p
+}
 
 func TestTransitionJiraIssue(t *testing.T) {
 	api := &plugintest.API{}
@@ -93,7 +103,7 @@ func TestTransitionJiraIssue(t *testing.T) {
 	p.userStore = getMockUserStoreKV()
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		issueKey    string
 		toState     string
 		expectedMsg string
@@ -129,9 +139,7 @@ func TestTransitionJiraIssue(t *testing.T) {
 			expectedMsg: fmt.Sprintf("[%s](%s/browse/%s) transitioned to `In Progress`", existingIssueKey, mockInstance1URL, existingIssueKey),
 			expectedErr: nil,
 		},
-	}
-
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			actual, err := p.TransitionIssue(&InTransitionIssue{
 				InstanceID:       testInstance1.InstanceID,
@@ -150,7 +158,7 @@ func TestTransitionJiraIssue(t *testing.T) {
 func TestRouteIssueTransition(t *testing.T) {
 	api := &plugintest.API{}
 
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
 
 	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
 
@@ -161,7 +169,7 @@ func TestRouteIssueTransition(t *testing.T) {
 
 	p.userStore = getMockUserStoreKV()
 
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		bb           []byte
 		request      *model.PostActionIntegrationRequest
 		expectedCode int
@@ -189,8 +197,7 @@ func TestRouteIssueTransition(t *testing.T) {
 			},
 			expectedCode: http.StatusInternalServerError,
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			bb, err := json.Marshal(tt.request)
 			assert.Nil(t, err)
@@ -208,7 +215,7 @@ func TestRouteShareIssuePublicly(t *testing.T) {
 	api := &plugintest.API{}
 	p := Plugin{}
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
 	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(&model.Post{}, nil)
 	api.On("DeleteEphemeralPost", validUserID, "").Return()
@@ -216,7 +223,7 @@ func TestRouteShareIssuePublicly(t *testing.T) {
 	p.instanceStore = p.getMockInstanceStoreKV(1)
 	p.userStore = getMockUserStoreKV()
 
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		bb           []byte
 		request      *model.PostActionIntegrationRequest
 		expectedCode int
@@ -266,8 +273,7 @@ func TestRouteShareIssuePublicly(t *testing.T) {
 			},
 			expectedCode: http.StatusOK,
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			bb, err := json.Marshal(tt.request)
 			assert.Nil(t, err)
@@ -285,7 +291,7 @@ func TestShouldReceiveNotification(t *testing.T) {
 	cs.RolesForDMNotification = make(map[string]bool)
 	cs.RolesForDMNotification[subCommandAssignee] = true
 	cs.RolesForDMNotification[subCommandMention] = true
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		role         string
 		notification bool
 	}{
@@ -305,27 +311,18 @@ func TestShouldReceiveNotification(t *testing.T) {
 			role:         subCommandWatching,
 			notification: false,
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			val := cs.ShouldReceiveNotification(tt.role)
 			assert.Equal(t, tt.notification, val)
 		})
 	}
-
 }
 
 func TestFetchConnectedUser(t *testing.T) {
-	api := &plugintest.API{}
+	p := setupTestPlugin(&plugintest.API{})
 
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
-
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
-	p := &Plugin{}
-	p.SetAPI(api)
-	p.instanceStore = p.getMockInstanceStoreKV(1)
-	p.userStore = getMockUserStoreKV()
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		instanceID  types.ID
 		client      Client
 		connection  *Connection
@@ -384,10 +381,9 @@ func TestFetchConnectedUser(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
+			expectedErr: errors.New(fmt.Sprintf("instance %s not found", fmt.Sprintf("%q", "test-instanceID"))),
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			client, connection, error := tt.wh.fetchConnectedUser(p, tt.instanceID)
 			assert.Equal(t, tt.connection, connection)
@@ -400,15 +396,8 @@ func TestFetchConnectedUser(t *testing.T) {
 }
 
 func TestApplyReporterNotification(t *testing.T) {
-	api := &plugintest.API{}
+	p := setupTestPlugin(&plugintest.API{})
 
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
-
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
-	p := Plugin{}
-	p.SetAPI(api)
-	p.instanceStore = p.getMockInstanceStoreKV(1)
-	p.userStore = getMockUserStoreKV()
 	wh := &webhook{
 		eventTypes: map[string]bool{createdCommentEvent: true},
 		JiraWebhook: &JiraWebhook{
@@ -428,7 +417,7 @@ func TestApplyReporterNotification(t *testing.T) {
 		},
 		notifications: []webhookUserNotification{},
 	}
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		instanceID types.ID
 		reporter   *jira.User
 	}{
@@ -444,8 +433,7 @@ func TestApplyReporterNotification(t *testing.T) {
 			instanceID: testInstance1.InstanceID,
 			reporter:   nil,
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			totalNotifications := len(wh.notifications)
 			p.applyReporterNotification(wh, tt.instanceID, tt.reporter)
@@ -456,22 +444,16 @@ func TestApplyReporterNotification(t *testing.T) {
 			}
 		})
 	}
+
 }
 
 func TestGetUserSetting(t *testing.T) {
-	api := &plugintest.API{}
+	p := setupTestPlugin(&plugintest.API{})
 
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
-
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
-	p := Plugin{}
-	p.SetAPI(api)
 	jiraAccountID := "test-jiraAccountID"
 	jiraUsername := "test-jiraUsername"
-	p.instanceStore = p.getMockInstanceStoreKV(1)
-	p.userStore = getMockUserStoreKV()
 
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		wh          *webhook
 		instanceID  types.ID
 		connection  *Connection
@@ -500,8 +482,7 @@ func TestGetUserSetting(t *testing.T) {
 			connection:  nil,
 			expectedErr: errors.New("instance " + fmt.Sprintf("\"%s\"", "instanceID") + " not found"),
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			connection, error := p.GetUserSetting(tt.wh, tt.instanceID, jiraAccountID, jiraUsername)
 			assert.Equal(t, tt.connection, connection)
@@ -515,7 +496,7 @@ func TestGetUserSetting(t *testing.T) {
 func TestRouteAttachCommentToIssue(t *testing.T) {
 	api := &plugintest.API{}
 
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
+	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
 
 	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
 
@@ -539,7 +520,7 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 		IssueKey    string `json:"issueKey"`
 	}
 
-	tests := map[string]struct {
+	for name, tt := range map[string]struct {
 		method       string
 		header       string
 		request      *requestStruct
@@ -614,8 +595,7 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 			},
 			expectedCode: http.StatusOK,
 		},
-	}
-	for name, tt := range tests {
+	} {
 		t.Run(name, func(t *testing.T) {
 			p := Plugin{}
 			p.SetAPI(api)
@@ -636,4 +616,5 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 			assert.Equal(t, tt.expectedCode, w.Result().StatusCode, "no request data")
 		})
 	}
+
 }
