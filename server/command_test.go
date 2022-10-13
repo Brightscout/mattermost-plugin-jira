@@ -263,7 +263,7 @@ func TestPlugin_ExecuteCommand_Settings(t *testing.T) {
 func TestPlugin_ExecuteCommand_Installation(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("LogError", mock.AnythingOfTypeArgument("string")).Return(nil)
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return()
 	api.On("KVSet", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(nil)
 	api.On("KVSetWithExpiry", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(nil)
 	api.On("KVGet", keyInstances).Return(nil, nil)

@@ -87,7 +87,7 @@ func (client testClient) AddComment(issueKey string, comment *jira.Comment) (*ji
 func setupTestPlugin(api *plugintest.API) *Plugin {
 	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
 
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
+	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return()
 	p := &Plugin{}
 	p.SetAPI(api)
 	p.instanceStore = p.getMockInstanceStoreKV(1)
@@ -98,10 +98,7 @@ func setupTestPlugin(api *plugintest.API) *Plugin {
 func TestTransitionJiraIssue(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
-	p := Plugin{}
-	p.SetAPI(api)
-	p.userStore = getMockUserStoreKV()
-	p.instanceStore = p.getMockInstanceStoreKV(1)
+	p := setupTestPlugin(api)
 
 	for name, tt := range map[string]struct {
 		issueKey    string
@@ -157,17 +154,8 @@ func TestTransitionJiraIssue(t *testing.T) {
 
 func TestRouteIssueTransition(t *testing.T) {
 	api := &plugintest.API{}
-
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
-
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
-
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
-
-	p := Plugin{}
-	p.SetAPI(api)
-
-	p.userStore = getMockUserStoreKV()
+	p := setupTestPlugin(api)
 
 	for name, tt := range map[string]struct {
 		bb           []byte
@@ -213,15 +201,10 @@ func TestRouteIssueTransition(t *testing.T) {
 func TestRouteShareIssuePublicly(t *testing.T) {
 	validUserID := "1"
 	api := &plugintest.API{}
-	p := Plugin{}
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(&model.Post{}, nil)
 	api.On("DeleteEphemeralPost", validUserID, "").Return()
-	p.SetAPI(api)
-	p.instanceStore = p.getMockInstanceStoreKV(1)
-	p.userStore = getMockUserStoreKV()
+	p := setupTestPlugin(api)
 
 	for name, tt := range map[string]struct {
 		bb           []byte
@@ -381,7 +364,7 @@ func TestFetchConnectedUser(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: errors.New(fmt.Sprintf("instance %s not found", fmt.Sprintf("%q", "test-instanceID"))),
+			expectedErr: errors.New(fmt.Sprintf("instance %q not found", "test-instanceID")),
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -496,10 +479,6 @@ func TestGetUserSetting(t *testing.T) {
 func TestRouteAttachCommentToIssue(t *testing.T) {
 	api := &plugintest.API{}
 
-	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return()
-
-	api.On("LogDebug", mockAnythingOfTypeBatch("string", 11)...).Return(nil)
-
 	api.On("GetPost", "error_post").Return(nil, &model.AppError{Id: "1"})
 	api.On("GetPost", "post_not_found").Return(nil, (*model.AppError)(nil))
 
@@ -512,6 +491,11 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, (*model.AppError)(nil))
 
 	api.On("PublishWebSocketEvent", "update_defaults", mock.AnythingOfType("map[string]interface {}"), mock.AnythingOfType("*model.WebsocketBroadcast"))
+
+	p := setupTestPlugin(api)
+	p.updateConfig(func(conf *config) {
+		conf.mattermostSiteURL = "https://somelink.com"
+	})
 
 	type requestStruct struct {
 		PostID      string `json:"post_id"`
@@ -597,14 +581,6 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			p := Plugin{}
-			p.SetAPI(api)
-			p.updateConfig(func(conf *config) {
-				conf.mattermostSiteURL = "https://somelink.com"
-			})
-			p.userStore = getMockUserStoreKV()
-			p.instanceStore = p.getMockInstanceStoreKV(1)
-
 			tt.request.InstanceID = testInstance1.InstanceID.String()
 			bb, err := json.Marshal(tt.request)
 			assert.Nil(t, err)
@@ -616,5 +592,4 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 			assert.Equal(t, tt.expectedCode, w.Result().StatusCode, "no request data")
 		})
 	}
-
 }
