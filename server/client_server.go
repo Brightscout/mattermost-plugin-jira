@@ -36,7 +36,7 @@ type FieldValues struct {
 	FieldID string `json:"fieldId,omitempty"`
 }
 
-type FieldId struct {
+type FieldID struct {
 	Values []FieldValues `json:"values,omitempty"`
 }
 
@@ -59,8 +59,7 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 		return nil, err
 	}
 
-	_, err = client.Jira.Do(req, v)
-	if err != nil {
+	if _, err = client.Jira.Do(req, v); err != nil {
 		return nil, err
 	}
 
@@ -77,19 +76,16 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 	var info *jira.CreateMetaInfo
 	var resp *jira.Response
 	if currentVersion.LessThan(pivotVersion) {
-		cimd, response, error := client.Jira.Issue.GetCreateMetaWithOptions(options)
-		info = cimd
-		resp = response
-		err = error
+		info, resp, err = client.Jira.Issue.GetCreateMetaWithOptions(options)
 	} else {
-		cd, response, err := client.Jira.Project.ListWithOptions(options)
+		cd, response, er := client.Jira.Project.ListWithOptions(options)
 		meta := new(jira.CreateMetaInfo)
 
-		if err == nil {
+		if er == nil {
 			for i := 0; i < len(*cd); i++ {
 				meta.Expand = (*cd)[i].Expand
 				apiEndpoint := fmt.Sprintf("%s%s/issuetypes", CreateMetaAPIEndpoint, (*cd)[i].ID)
-				req, err := client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
+				req, err = client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
 				if err != nil {
 					break
 				}
@@ -111,7 +107,7 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 
 				for _, issue := range project.IssueTypes {
 					apiEndpoint := fmt.Sprintf("%s%s/issuetypes/%s", CreateMetaAPIEndpoint, (*cd)[i].ID, issue.Id)
-					req, err := client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
+					req, err = client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
 					if err != nil {
 						break
 					}
@@ -122,7 +118,7 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 						break
 					}
 
-					fieldID := new(FieldId)
+					fieldID := new(FieldID)
 					response, err = client.Jira.Do(req, fieldID)
 					if err != nil {
 						break
@@ -134,13 +130,14 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 					}
 					issue.Fields = fieldMap
 				}
-				proj := meta.Projects
-				proj = append(proj, project)
-				meta.Projects = proj
+				meta.Projects = append(meta.Projects, project)
 			}
 		}
 		info = meta
 		resp = response
+		if er != nil {
+			err = er
+		}
 	}
 
 	if err != nil {
