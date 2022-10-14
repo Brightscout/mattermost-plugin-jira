@@ -8,9 +8,9 @@ import (
 )
 
 type webhookWorker struct {
-	id        int
 	p         *Plugin
 	workQueue <-chan *webhookMessage
+	id        int
 }
 
 type webhookMessage struct {

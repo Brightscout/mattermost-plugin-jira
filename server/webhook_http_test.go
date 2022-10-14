@@ -64,12 +64,12 @@ func TestWebhookHTTP(t *testing.T) {
 	for name, tc := range map[string]struct {
 		Request                 *http.Request
 		ExpectedHeadline        string
-		ExpectedSlackAttachment bool
 		ExpectedText            string
 		ExpectedFields          []*model.SlackAttachmentField
 		ExpectedStatus          int
 		ExpectedIgnored         bool // Indicates that no post was made as a result of the webhook request
 		CurrentInstance         bool
+		ExpectedSlackAttachment bool
 	}{
 		"issue created": {
 			Request:                 testWebhookRequest("webhook-issue-created.json"),

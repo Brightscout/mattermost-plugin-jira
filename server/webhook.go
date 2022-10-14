@@ -41,8 +41,8 @@ type webhook struct {
 	headline      string
 	text          string
 	fields        []*model.SlackAttachmentField
-	notifications []webhookUserNotification
 	fieldInfo     webhookField
+	notifications []webhookUserNotification
 }
 
 type webhookUserNotification struct {

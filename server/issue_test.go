@@ -101,10 +101,10 @@ func TestTransitionJiraIssue(t *testing.T) {
 	p := setupTestPlugin(api)
 
 	for name, tt := range map[string]struct {
+		expectedErr error
 		issueKey    string
 		toState     string
 		expectedMsg string
-		expectedErr error
 	}{
 		"Transitioning a non existent issue": {
 			issueKey:    nonExistantIssueKey,
@@ -158,8 +158,8 @@ func TestRouteIssueTransition(t *testing.T) {
 	p := setupTestPlugin(api)
 
 	for name, tt := range map[string]struct {
-		bb           []byte
 		request      *model.PostActionIntegrationRequest
+		bb           []byte
 		expectedCode int
 	}{
 		"No request data": {
@@ -207,8 +207,8 @@ func TestRouteShareIssuePublicly(t *testing.T) {
 	p := setupTestPlugin(api)
 
 	for name, tt := range map[string]struct {
-		bb           []byte
 		request      *model.PostActionIntegrationRequest
+		bb           []byte
 		expectedCode int
 	}{
 		"No request data": {
@@ -306,11 +306,11 @@ func TestFetchConnectedUser(t *testing.T) {
 	p := setupTestPlugin(&plugintest.API{})
 
 	for name, tt := range map[string]struct {
+		expectedErr error
 		instanceID  types.ID
 		client      Client
 		connection  *Connection
 		wh          webhook
-		expectedErr error
 	}{
 		"Success": {
 			instanceID: testInstance1.InstanceID,
@@ -401,20 +401,20 @@ func TestApplyReporterNotification(t *testing.T) {
 		notifications: []webhookUserNotification{},
 	}
 	for name, tt := range map[string]struct {
-		instanceID types.ID
 		reporter   *jira.User
+		instanceID types.ID
 	}{
 		"Success": {
-			instanceID: testInstance1.InstanceID,
 			reporter:   &jira.User{},
+			instanceID: testInstance1.InstanceID,
 		},
 		"Unable to load instance": {
-			instanceID: "test-instanceID",
 			reporter:   &jira.User{},
+			instanceID: "test-instanceID",
 		},
 		"Reporter is nil": {
-			instanceID: testInstance1.InstanceID,
 			reporter:   nil,
+			instanceID: testInstance1.InstanceID,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -427,7 +427,6 @@ func TestApplyReporterNotification(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestGetUserSetting(t *testing.T) {
@@ -437,10 +436,10 @@ func TestGetUserSetting(t *testing.T) {
 	jiraUsername := "test-jiraUsername"
 
 	for name, tt := range map[string]struct {
-		wh          *webhook
-		instanceID  types.ID
-		connection  *Connection
 		expectedErr error
+		wh          *webhook
+		connection  *Connection
+		instanceID  types.ID
 	}{
 		"Success": {
 			wh:         &webhook{},
@@ -505,9 +504,9 @@ func TestRouteAttachCommentToIssue(t *testing.T) {
 	}
 
 	for name, tt := range map[string]struct {
+		request      *requestStruct
 		method       string
 		header       string
-		request      *requestStruct
 		expectedCode int
 	}{
 		"Wrong method": {

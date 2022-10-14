@@ -5,11 +5,11 @@ import (
 )
 
 type transport struct {
-	RequestSizeLimit  ByteSize
-	ResponseSizeLimit ByteSize
+	http.RoundTripper
 	RequestPreClose   func(*LimitedReadCloser) error
 	ResponsePreClose  func(*LimitedReadCloser) error
-	http.RoundTripper
+	RequestSizeLimit  ByteSize
+	ResponseSizeLimit ByteSize
 }
 
 func WithRequestSizeLimit(limit ByteSize) func(t *transport) {

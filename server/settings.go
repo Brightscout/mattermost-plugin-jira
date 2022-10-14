@@ -1,9 +1,9 @@
 package main
 
 import (
-	"strings"
-
 	"github.com/mattermost/mattermost-server/v6/model"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
@@ -69,5 +69,5 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 		notifications = settingOn
 	}
 
-	return p.responsef(header, "Settings updated.\n\t%s notifications %s.", strings.Title(args[1]), notifications)
+	return p.responsef(header, "Settings updated.\n\t%s notifications %s.", cases.Title(language.Und, cases.NoLower).String(args[1]), notifications)
 }

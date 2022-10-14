@@ -18,9 +18,9 @@ import (
 const authTokenTTL = 15 * time.Minute
 
 type AuthToken struct {
+	Expires          time.Time `json:"expires,omitempty"`
 	MattermostUserID string    `json:"mattermost_user_id,omitempty"`
 	Secret           string    `json:"secret,omitempty"`
-	Expires          time.Time `json:"expires,omitempty"`
 }
 
 func (p *Plugin) NewEncodedAuthToken(mattermostUserID, secret string) (returnToken string, returnErr error) {

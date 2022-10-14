@@ -17,8 +17,8 @@ type IDIndexStore interface {
 }
 
 type idIndexStore struct {
-	key string
 	kv  KVStore
+	key string
 }
 
 func (s *store) IDIndex(key string) IDIndexStore {

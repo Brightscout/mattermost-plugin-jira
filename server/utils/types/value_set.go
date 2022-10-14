@@ -31,8 +31,8 @@ type ValueArray interface {
 
 type ValueSet struct {
 	proto ValueArray
-	ids   []ID
 	m     map[ID]Value
+	ids   []ID
 }
 
 func NewValueSet(proto ValueArray, vv ...Value) *ValueSet {

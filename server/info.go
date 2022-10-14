@@ -12,12 +12,12 @@ import (
 )
 
 type UserInfo struct {
-	IsConnected bool       `json:"is_connected"`
-	CanConnect  bool       `json:"can_connect"`
 	User        *User      `json:"user"`
 	Instances   *Instances `json:"instances"`
-
 	connectable *Instances
+
+	IsConnected bool `json:"is_connected"`
+	CanConnect  bool `json:"can_connect"`
 }
 
 func (p *Plugin) httpGetUserInfo(w http.ResponseWriter, r *http.Request) (int, error) {

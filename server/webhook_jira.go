@@ -13,11 +13,12 @@ import (
 )
 
 type JiraWebhook struct {
-	WebhookEvent string       `json:"webhookEvent,omitempty"`
-	Issue        jira.Issue   `json:"issue,omitempty"`
-	User         jira.User    `json:"user,omitempty"`
-	Comment      jira.Comment `json:"comment,omitempty"`
-	ChangeLog    struct {
+	WebhookEvent       string       `json:"webhookEvent,omitempty"`
+	IssueEventTypeName string       `json:"issue_event_type_name"`
+	Issue              jira.Issue   `json:"issue,omitempty"`
+	User               jira.User    `json:"user,omitempty"`
+	Comment            jira.Comment `json:"comment,omitempty"`
+	ChangeLog          struct {
 		Items []struct {
 			From       string
 			FromString string
@@ -28,7 +29,6 @@ type JiraWebhook struct {
 			FieldType  string `json:"fieldtype"`
 		}
 	} `json:"changelog,omitempty"`
-	IssueEventTypeName string `json:"issue_event_type_name"`
 }
 
 func (jwh *JiraWebhook) mdJiraLink(title, suffix string) string {
