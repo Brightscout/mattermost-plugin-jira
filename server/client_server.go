@@ -78,10 +78,10 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 	if currentVersion.LessThan(pivotVersion) {
 		info, resp, err = client.Jira.Issue.GetCreateMetaWithOptions(options)
 	} else {
-		cd, response, er := client.Jira.Project.ListWithOptions(options)
+		cd, response, apiErr := client.Jira.Project.ListWithOptions(options)
 		meta := new(jira.CreateMetaInfo)
 
-		if er == nil {
+		if apiErr == nil {
 			for i := 0; i < len(*cd); i++ {
 				meta.Expand = (*cd)[i].Expand
 				apiEndpoint := fmt.Sprintf("%s%s/issuetypes", CreateMetaAPIEndpoint, (*cd)[i].ID)
@@ -135,8 +135,8 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 		}
 		info = meta
 		resp = response
-		if er != nil {
-			err = er
+		if apiErr != nil {
+			err = apiErr
 		}
 	}
 
