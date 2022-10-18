@@ -12,6 +12,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	ServerInfoApiEndpoint = "rest/api/2/serverInfo"
+	CreateMetaAPIEndpoint = "rest/api/2/issue/createmeta/"
+	PivotVersion          = "8.4.0"
+)
+
 type jiraServerClient struct {
 	JiraClient
 }
@@ -44,15 +50,9 @@ type Version struct {
 	VersionInfo string `json:"version,omitempty"`
 }
 
-const (
-	CreateMetaAPIEndpoint = "rest/api/2/issue/createmeta/"
-	PivotVersion          = "8.4.0"
-)
-
 // GetCreateMeta returns the metadata needed to implement the UI and validation of
 // creating new Jira issues.
 func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, error) {
-	ServerInfoApiEndpoint := "rest/api/2/serverInfo"
 	v := new(Version)
 	req, err := client.Jira.NewRequest(http.MethodGet, ServerInfoApiEndpoint, nil)
 	if err != nil {
