@@ -14,14 +14,15 @@ const (
 
 	errStoreNewSettings = "Could not store new settings. Please contact your system administrator. Error: %v"
 	errConnectToJira    = "Your account is not connected to Jira. Please type `/jira connect`. %v"
-	subCommandAssignee  = "assignee"
-	subCommandMention   = "mention"
-	subCommandReporter  = "reporter"
-	subCommandWatching  = "watching"
+
+	notificationRoleAssignee = "assignee"
+	notificationRoleMention  = "mention"
+	notificationRoleReporter = "reporter"
+	notificationRoleWatching = "watching"
 )
 
-func (connection *Connection) sendNotification(role string, hasNotification bool) bool {
-	if role != subCommandAssignee && role != subCommandMention && role != subCommandReporter && role != subCommandWatching {
+func (connection *Connection) updateRolesForDMNotification(role string, hasNotification bool) bool {
+	if role != notificationRoleAssignee && role != notificationRoleMention && role != notificationRoleReporter && role != notificationRoleWatching {
 		return false
 	}
 	if connection.Settings.RolesForDMNotification == nil {
@@ -50,7 +51,7 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 	if connection.Settings == nil {
 		connection.Settings = &ConnectionSettings{}
 	}
-	if !connection.sendNotification(args[1], value) {
+	if !connection.updateRolesForDMNotification(args[1], value) {
 		return p.responsef(header, helpText)
 	}
 
