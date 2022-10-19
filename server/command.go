@@ -18,14 +18,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
 
-const (
-	commandTrigger = "jira"
-
-	subCommandAssignee = "assignee"
-	subCommandMention  = "mention"
-	subCommandReporter = "reporter"
-	subCommandWatching = "watching"
-)
+const commandTrigger = "jira"
 
 var jiraCommandHandler = CommandHandler{
 	handlers: map[string]CommandHandlerFunc{

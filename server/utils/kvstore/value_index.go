@@ -15,9 +15,9 @@ type ValueIndexStore interface {
 }
 
 type valueIndexStore struct {
-	proto types.ValueArray
-	kv    KVStore
 	key   string
+	kv    KVStore
+	proto types.ValueArray
 }
 
 func (s *store) ValueIndex(key string, proto types.ValueArray) ValueIndexStore {

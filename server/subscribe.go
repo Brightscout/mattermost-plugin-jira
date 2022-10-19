@@ -34,9 +34,9 @@ const (
 )
 
 type FieldFilter struct {
-	Values    StringSet `json:"values"`
 	Key       string    `json:"key"`
 	Inclusion string    `json:"inclusion"`
+	Values    StringSet `json:"values"`
 }
 
 type SubscriptionFilters struct {
@@ -49,9 +49,9 @@ type SubscriptionFilters struct {
 type ChannelSubscription struct {
 	ID         string              `json:"id"`
 	ChannelID  string              `json:"channel_id"`
+	Filters    SubscriptionFilters `json:"filters"`
 	Name       string              `json:"name"`
 	InstanceID types.ID            `json:"instance_id"`
-	Filters    SubscriptionFilters `json:"filters"`
 }
 
 type ChannelSubscriptions struct {
@@ -87,8 +87,8 @@ func (s *ChannelSubscriptions) add(newSubscription *ChannelSubscription) {
 }
 
 type Subscriptions struct {
-	Channel       *ChannelSubscriptions
 	PluginVersion string
+	Channel       *ChannelSubscriptions
 }
 
 func NewSubscriptions() *Subscriptions {
@@ -354,15 +354,15 @@ type ChannelSubMap map[string]InstanceSubMap
 type TeamSubsMap map[string]ChannelSubMap
 
 type SubsGroupedByTeam struct {
-	Subs     TeamSubsMap
 	TeamID   string
 	TeamName string
+	Subs     TeamSubsMap
 }
 
 type SubsGroupedByChannel struct {
 	ChannelID  string
-	SubIds     []string
 	NumberSubs int
+	SubIds     []string
 }
 
 func (p *Plugin) listChannelSubscriptions(instanceID types.ID, teamID string) (string, error) {
@@ -550,8 +550,8 @@ func (by By) Sort(teams []model.Team) {
 }
 
 type teamSorter struct {
-	by    func(p1, p2 *model.Team) bool // Closure used in the Less method.
 	teams []model.Team
+	by    func(p1, p2 *model.Team) bool // Closure used in the Less method.
 }
 
 // Len is part of sort.Interface.

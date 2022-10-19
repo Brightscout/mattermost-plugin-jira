@@ -8,9 +8,9 @@ import (
 )
 
 type webhookWorker struct {
+	id        int
 	p         *Plugin
 	workQueue <-chan *webhookMessage
-	id        int
 }
 
 type webhookMessage struct {
@@ -39,12 +39,10 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 	if err != nil {
 		return err
 	}
-
 	v := wh.(*webhook)
 	if err = v.JiraWebhook.expandIssue(ww.p, msg.InstanceID); err != nil {
 		return err
 	}
-
 	ww.p.checkIssueWatchers(v, msg.InstanceID)
 	ww.p.applyReporterNotification(v, msg.InstanceID, v.Issue.Fields.Reporter)
 

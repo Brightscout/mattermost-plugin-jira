@@ -8,10 +8,11 @@ import (
 )
 
 type LimitedReadCloser struct {
-	reader    io.Reader
-	closer    io.Closer
-	preClose  func(*LimitedReadCloser) error
 	TotalRead ByteSize
+
+	reader   io.Reader
+	closer   io.Closer
+	preClose func(*LimitedReadCloser) error
 }
 
 func NewLimitedReadCloser(rc io.ReadCloser, limit ByteSize, preClose func(*LimitedReadCloser) error) io.ReadCloser {

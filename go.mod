@@ -16,7 +16,6 @@ require (
 	github.com/rbriski/atlassian-jwt v0.0.0-20180307182949-7bb4ae273058
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/text v0.3.7
 )
 
 // Until github.com/mattermost/mattermost-server/v6 v6.5.0 is releated,

@@ -164,11 +164,11 @@ func (p *Plugin) respondErrWithFeedback(mattermostUserID string, post *model.Pos
 type InCreateIssue struct {
 	mattermostUserID         types.ID
 	InstanceID               types.ID         `json:"instance_id"`
+	RequiredFieldsNotCovered [][]string       `json:"required_fields_not_covered"`
 	PostID                   string           `json:"post_id"`
 	CurrentTeam              string           `json:"current_team"`
 	ChannelID                string           `json:"channel_id"`
 	Fields                   jira.IssueFields `json:"fields"`
-	RequiredFieldsNotCovered [][]string       `json:"required_fields_not_covered"`
 }
 
 func (p *Plugin) httpCreateIssue(w http.ResponseWriter, r *http.Request) (int, error) {
@@ -487,9 +487,9 @@ func (p *Plugin) GetSearchIssues(instanceID, mattermostUserID types.ID, q, jqlSt
 }
 
 type OutProjectMetadata struct {
-	DefaultProjectKey string                               `json:"default_project_key,omitempty"`
-	IssuesPerProjects map[string][]utils.ReactSelectOption `json:"issues_per_project"`
 	Projects          []utils.ReactSelectOption            `json:"projects"`
+	IssuesPerProjects map[string][]utils.ReactSelectOption `json:"issues_per_project"`
+	DefaultProjectKey string                               `json:"default_project_key,omitempty"`
 }
 
 func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Request) (int, error) {
@@ -529,15 +529,15 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 			Value: project.Key,
 			Label: project.Name,
 		}
-		issueTypes := []option{}
-		for _, issueType := range project.IssueTypes {
+		issueTypes := make([]option, len(project.IssueTypes))
+		for index, issueType := range project.IssueTypes {
 			if issueType.Subtasks {
 				continue
 			}
-			issueTypes = append(issueTypes, option{
+			issueTypes[index] = option{
 				Value: issueType.Id,
 				Label: issueType.Name,
-			})
+			}
 		}
 		issues[project.Key] = issueTypes
 	}

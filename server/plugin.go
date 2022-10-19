@@ -52,6 +52,9 @@ var BuildHashShort = ""
 var BuildDate = ""
 
 type externalConfig struct {
+	// Setting to turn on/off the webapp components of this plugin
+	EnableJiraUI bool `json:"enablejiraui"`
+
 	// Webhook secret
 	Secret string `json:"secret"`
 
@@ -67,9 +70,6 @@ type externalConfig struct {
 
 	// Additional Help Text to be shown in the output of '/jira help' command
 	JiraAdminAdditionalHelpText string
-
-	// Setting to turn on/off the webapp components of this plugin
-	EnableJiraUI bool `json:"enablejiraui"`
 
 	// Hide issue descriptions and comments in Webhook and Subscription messages
 	HideDecriptionComment bool
@@ -87,21 +87,19 @@ type externalConfig struct {
 const defaultMaxAttachmentSize = utils.ByteSize(10 * 1024 * 1024) // 10Mb
 
 type config struct {
-	rsaKey *rsa.PrivateKey
+	// externalConfig caches values from the plugin's settings in the server's config.json
+	externalConfig
 
 	// user ID of the bot account
 	botUserID string
 
-	mattermostSiteURL string
-
-	// externalConfig caches values from the plugin's settings in the server's config.json
-	externalConfig
-
 	// Maximum attachment size allowed to be uploaded to Jira
 	maxAttachmentSize utils.ByteSize
+
+	mattermostSiteURL string
+	rsaKey            *rsa.PrivateKey
 }
 
-//nolint
 type Plugin struct {
 	plugin.MattermostPlugin
 	client *pluginapi.Client
@@ -302,7 +300,7 @@ func (p *Plugin) OnActivate() error {
 
 	// Spin up our webhook workers.
 	for i := 0; i < WebhookMaxProcsPerServer; i++ {
-		go webhookWorker{p, p.webhookQueue, i}.work()
+		go webhookWorker{i, p, p.webhookQueue}.work()
 	}
 
 	p.enterpriseChecker = enterprise.NewEnterpriseChecker(p.API)

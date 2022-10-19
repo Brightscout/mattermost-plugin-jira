@@ -139,10 +139,10 @@ func hasSubscriptions(subscriptions []ChannelSubscription, t *testing.T) func(ap
 
 func TestSubscribe(t *testing.T) {
 	for name, tc := range map[string]struct {
-		apiCalls           func(*plugintest.API)
 		subscription       string
 		expectedStatusCode int
 		skipAuthorize      bool
+		apiCalls           func(*plugintest.API)
 	}{
 		"Invalid": {
 			subscription:       "{}",
@@ -349,10 +349,10 @@ func TestSubscribe(t *testing.T) {
 
 func TestDeleteSubscription(t *testing.T) {
 	for name, tc := range map[string]struct {
-		apiCalls           func(*plugintest.API)
 		subscriptionID     string
 		expectedStatusCode int
 		skipAuthorize      bool
+		apiCalls           func(*plugintest.API)
 	}{
 		"Invalid": {
 			subscriptionID:     "blab",
@@ -462,10 +462,10 @@ func TestDeleteSubscription(t *testing.T) {
 
 func TestEditSubscription(t *testing.T) {
 	for name, tc := range map[string]struct {
-		apiCalls           func(*plugintest.API)
 		subscription       string
 		expectedStatusCode int
 		skipAuthorize      bool
+		apiCalls           func(*plugintest.API)
 	}{
 		"Invalid": {
 			subscription:       "{}",
@@ -679,11 +679,11 @@ func TestEditSubscription(t *testing.T) {
 
 func TestGetSubscriptionsForChannel(t *testing.T) {
 	for name, tc := range map[string]struct {
-		apiCalls              func(*plugintest.API)
 		channelID             string
-		returnedSubscriptions []ChannelSubscription
 		expectedStatusCode    int
 		skipAuthorize         bool
+		apiCalls              func(*plugintest.API)
+		returnedSubscriptions []ChannelSubscription
 	}{
 		"Invalid": {
 			channelID:          "nope",

@@ -26,10 +26,6 @@ import (
 
 type cloudInstance struct {
 	*InstanceCommon
-	*AtlassianSecurityContext `json:"-"`
-
-	// For cloud instances (atlassian-connect.json install and user auth)
-	RawAtlassianSecurityContext string
 
 	// Initially a new instance is created with an expiration time. The
 	// admin is expected to upload it to the Jira instance, and we will
@@ -37,6 +33,10 @@ type cloudInstance struct {
 	// and makes it permanent. No subsequent /installed will be accepted
 	// for the instance.
 	Installed bool
+
+	// For cloud instances (atlassian-connect.json install and user auth)
+	RawAtlassianSecurityContext string
+	*AtlassianSecurityContext   `json:"-"`
 }
 
 var _ Instance = (*cloudInstance)(nil)

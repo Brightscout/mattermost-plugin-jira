@@ -39,9 +39,9 @@ func TestPlugin(t *testing.T) {
 	}
 
 	for name, tc := range map[string]struct {
+		Configuration      TestConfiguration
 		Request            *http.Request
 		CreatePostError    *model.AppError
-		Configuration      TestConfiguration
 		ExpectedStatusCode int
 	}{
 		"NoConfiguration": {

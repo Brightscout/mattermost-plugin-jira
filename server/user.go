@@ -26,12 +26,12 @@ type User struct {
 }
 
 type Connection struct {
-	Settings           *ConnectionSettings
+	jira.User
 	PluginVersion      string
 	Oauth1AccessToken  string `json:",omitempty"`
 	Oauth1AccessSecret string `json:",omitempty"`
+	Settings           *ConnectionSettings
 	DefaultProjectKey  string `json:"default_project_key,omitempty"`
-	jira.User
 }
 
 func (connection *Connection) JiraAccountID() types.ID {
@@ -43,8 +43,8 @@ func (connection *Connection) JiraAccountID() types.ID {
 }
 
 type ConnectionSettings struct {
-	RolesForDMNotification map[string]bool
 	Notifications          bool `json:"notifications"`
+	RolesForDMNotification map[string]bool
 }
 
 func (s *ConnectionSettings) String() string {

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/mattermost/mattermost-server/v6/model"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
@@ -12,16 +12,16 @@ const (
 	settingOn  = "on"
 	settingOff = "off"
 
-	errStoreNewSettings      = "Could not store new settings. Please contact your system administrator. Error: %v"
-	errConnectToJira         = "Your account is not connected to Jira. Please type `/jira connect`. %v"
-	notificationRoleAssignee = "assignee"
-	notificationRoleMention  = "mention"
-	notificationRoleReporter = "reporter"
-	notificationRoleWatching = "watching"
+	errStoreNewSettings = "Could not store new settings. Please contact your system administrator. Error: %v"
+	errConnectToJira    = "Your account is not connected to Jira. Please type `/jira connect`. %v"
+	subCommandAssignee  = "assignee"
+	subCommandMention   = "mention"
+	subCommandReporter  = "reporter"
+	subCommandWatching  = "watching"
 )
 
-func (connection *Connection) UpdateRolesForDMNotification(role string, hasNotification bool) bool {
-	if role != notificationRoleAssignee && role != notificationRoleMention && role != notificationRoleReporter && role != notificationRoleWatching {
+func (connection *Connection) sendNotification(role string, hasNotification bool) bool {
+	if role != subCommandAssignee && role != subCommandMention && role != subCommandReporter && role != subCommandWatching {
 		return false
 	}
 	if connection.Settings.RolesForDMNotification == nil {
@@ -30,7 +30,6 @@ func (connection *Connection) UpdateRolesForDMNotification(role string, hasNotif
 	connection.Settings.RolesForDMNotification[role] = hasNotification
 	return true
 }
-
 func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, mattermostUserID types.ID, connection *Connection, args []string) *model.CommandResponse {
 	const helpText = "`/jira settings notifications [assignee|mention|reporter|watching] [value]`\n* Invalid value. Accepted values are: `on` or `off`."
 
@@ -51,7 +50,7 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 	if connection.Settings == nil {
 		connection.Settings = &ConnectionSettings{}
 	}
-	if !connection.UpdateRolesForDMNotification(args[1], value) {
+	if !connection.sendNotification(args[1], value) {
 		return p.responsef(header, helpText)
 	}
 
@@ -70,5 +69,5 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 		notifications = settingOn
 	}
 
-	return p.responsef(header, "Settings updated.\n\t%s notifications %s.", cases.Title(language.Und, cases.NoLower).String(args[1]), notifications)
+	return p.responsef(header, "Settings updated.\n\t%s notifications %s.", strings.Title(args[1]), notifications)
 }
