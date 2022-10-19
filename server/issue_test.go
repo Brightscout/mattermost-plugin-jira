@@ -427,7 +427,6 @@ func TestApplyReporterNotification(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestGetUserSetting(t *testing.T) {
