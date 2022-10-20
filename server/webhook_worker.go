@@ -39,7 +39,6 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 	if err != nil {
 		return err
 	}
-
 	v := wh.(*webhook)
 	if err = v.JiraWebhook.expandIssue(ww.p, msg.InstanceID); err != nil {
 		return err

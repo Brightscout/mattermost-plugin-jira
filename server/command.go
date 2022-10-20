@@ -18,13 +18,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
 
-const (
-	commandTrigger     = "jira"
-	subCommandAssignee = "assignee"
-	subCommandMention  = "mention"
-	subCommandReporter = "reporter"
-	subCommandWatching = "watching"
-)
+const commandTrigger = "jira"
 
 var jiraCommandHandler = CommandHandler{
 	handlers: map[string]CommandHandlerFunc{
@@ -265,16 +259,16 @@ func createSettingsCommand(optInstance bool) *model.AutocompleteData {
 	notifications := model.NewAutocompleteData(
 		"notifications", "[assignee|mention|reporter|watching]", "manage notifications")
 
-	assigneeNotifications := model.NewAutocompleteData(subCommandAssignee, "", "manage assignee notifications")
+	assigneeNotifications := model.NewAutocompleteData(assigneeRole, "", "manage assignee notifications")
 	assigneeNotifications.AddStaticListArgument("value", true, setting)
 
-	mentionNotifications := model.NewAutocompleteData(subCommandMention, "", "manage mention notifications")
+	mentionNotifications := model.NewAutocompleteData(mentionRole, "", "manage mention notifications")
 	mentionNotifications.AddStaticListArgument("value", true, setting)
 
-	reporterNotifications := model.NewAutocompleteData(subCommandReporter, "", "manage reporter notifications")
+	reporterNotifications := model.NewAutocompleteData(reporterRole, "", "manage reporter notifications")
 	reporterNotifications.AddStaticListArgument("value", true, setting)
 
-	watchingNotifications := model.NewAutocompleteData(subCommandWatching, "", "manage watching notifications")
+	watchingNotifications := model.NewAutocompleteData(watchingRole, "", "manage watching notifications")
 	reporterNotifications.AddStaticListArgument("value", true, setting)
 	notifications.AddCommand(assigneeNotifications)
 	notifications.AddCommand(mentionNotifications)

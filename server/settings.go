@@ -15,14 +15,14 @@ const (
 	errStoreNewSettings = "Could not store new settings. Please contact your system administrator. Error: %v"
 	errConnectToJira    = "Your account is not connected to Jira. Please type `/jira connect`. %v"
 
-	notificationRoleAssignee = "assignee"
-	notificationRoleMention  = "mention"
-	notificationRoleReporter = "reporter"
-	notificationRoleWatching = "watching"
+	assigneeRole = "assignee"
+	mentionRole  = "mention"
+	reporterRole = "reporter"
+	watchingRole = "watching"
 )
 
 func (connection *Connection) updateRolesForDMNotification(role string, hasNotification bool) bool {
-	if role != notificationRoleAssignee && role != notificationRoleMention && role != notificationRoleReporter && role != notificationRoleWatching {
+	if role != assigneeRole && role != mentionRole && role != reporterRole && role != watchingRole {
 		return false
 	}
 	if connection.Settings.RolesForDMNotification == nil {
