@@ -60,7 +60,6 @@ func (client jiraServerClient) GetIssueInfo(projectID string) (*IssueInfo, *jira
 
 	issues := new(IssueInfo)
 	response, err := client.Jira.Do(req, issues)
-
 	return issues, response, err
 }
 
