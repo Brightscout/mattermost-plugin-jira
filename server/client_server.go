@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	ServerInfoApiEndpoint = "rest/api/2/serverInfo"
+	ServerInfoAPIEndpoint = "rest/api/2/serverInfo"
 	CreateMetaAPIEndpoint = "rest/api/2/issue/createmeta/"
 	PivotVersion          = "8.4.0"
 )
@@ -67,7 +67,7 @@ func (client jiraServerClient) GetIssueInfo(projectID string) (*IssueInfo, *jira
 // creating new Jira issues.
 func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, error) {
 	v := new(ServerVersion)
-	req, err := client.Jira.NewRequest(http.MethodGet, ServerInfoApiEndpoint, nil)
+	req, err := client.Jira.NewRequest(http.MethodGet, ServerInfoAPIEndpoint, nil)
 	if err != nil {
 		return nil, err
 	}
