@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	APIEndpointGetServerInfo              = "rest/api/2/serverInfo"
-	APIEndpointCreateIssueMeta            = "rest/api/2/issue/createmeta/"
-	JiraVersionWithIssueAPIBreakingChange = "9.0.0"
+	APIEndpointGetServerInfo                     = "rest/api/2/serverInfo"
+	APIEndpointCreateIssueMeta                   = "rest/api/2/issue/createmeta/"
+	JiraVersionWithOldCreateMetaBreakingEndPoint = "9.0.0"
 )
 
 type jiraServerClient struct {
@@ -71,7 +71,7 @@ func (client jiraServerClient) GetProjectInfo(currentVersion semver.Version, piv
 	var projectList *jira.ProjectList
 	var err error
 
-	if currentVersion.Compare(pivotVersion) == -1 {
+	if currentVersion.LT(pivotVersion) {
 		info, resp, err = client.Jira.Issue.GetCreateMetaWithOptions(options)
 	} else {
 		projectList, resp, err = client.Jira.Project.ListWithOptions(options)
@@ -145,7 +145,7 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 		return nil, errors.Wrap(err, "error while parsing version")
 	}
 
-	pivotVersion, err := semver.Make(JiraVersionWithIssueAPIBreakingChange)
+	pivotVersion, err := semver.Make(JiraVersionWithOldCreateMetaBreakingEndPoint)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while parsing version")
 	}
