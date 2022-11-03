@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	APIEndpointGetServerInfo                     = "rest/api/2/serverInfo"
-	APIEndpointCreateIssueMeta                   = "rest/api/2/issue/createmeta/"
-	JiraVersionWithOldCreateMetaBreakingEndPoint = "9.0.0"
+	APIEndpointGetServerInfo           = "rest/api/2/serverInfo"
+	APIEndpointCreateIssueMeta         = "rest/api/2/issue/createmeta/"
+	JiraVersionWithOldIssueAPIBreaking = "9.0.0"
 )
 
 type jiraServerClient struct {
@@ -127,9 +127,9 @@ func (client jiraServerClient) GetProjectInfo(currentVersion semver.Version, piv
 	return info, resp, err
 }
 
-// GetCreateMeta returns the metadata needed to implement the UI and validation of
+// GetCreateMetaInfo returns the metadata needed to implement the UI and validation of
 // creating new Jira issues.
-func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, error) {
+func (client jiraServerClient) GetCreateMetaInfo(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, error) {
 	v := new(JiraServerVersionInfo)
 	req, err := client.Jira.NewRequest(http.MethodGet, APIEndpointGetServerInfo, nil)
 	if err != nil {
@@ -145,13 +145,12 @@ func (client jiraServerClient) GetCreateMeta(options *jira.GetQueryOptions) (*ji
 		return nil, errors.Wrap(err, "error while parsing version")
 	}
 
-	pivotVersion, err := semver.Make(JiraVersionWithOldCreateMetaBreakingEndPoint)
+	pivotVersion, err := semver.Make(JiraVersionWithOldIssueAPIBreaking)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while parsing version")
 	}
 
 	info, resp, err := client.GetProjectInfo(currentVersion, pivotVersion, options)
-
 	if err != nil {
 		if resp == nil {
 			return nil, err
