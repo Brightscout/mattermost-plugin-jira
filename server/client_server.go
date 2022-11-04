@@ -55,7 +55,7 @@ func (client jiraServerClient) GetIssueInfo(projectID string) (*ProjectIssueInfo
 	return &issues, response, err
 }
 
-func (client jiraServerClient) GetProjectInfoWithForPivotJiraVersion(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, *jira.Response, error) {
+func (client jiraServerClient) GetProjectInfoForPivotJiraVersion(options *jira.GetQueryOptions) (*jira.CreateMetaInfo, *jira.Response, error) {
 	var issueInfo *ProjectIssueInfo
 	var req *http.Request
 
@@ -112,7 +112,7 @@ func (client jiraServerClient) GetProjectInfo(currentVersion, pivotVersion semve
 	if currentVersion.LT(pivotVersion) {
 		info, resp, err = client.Jira.Issue.GetCreateMetaWithOptions(options)
 	} else {
-		info, resp, err = client.GetProjectInfoWithForPivotJiraVersion(options)
+		info, resp, err = client.GetProjectInfoForPivotJiraVersion(options)
 	}
 	return info, resp, err
 }
