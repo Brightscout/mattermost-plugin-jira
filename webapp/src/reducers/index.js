@@ -171,7 +171,7 @@ const subscriptionTemplates = (state = '', action) => {
     case ActionTypes.CREATED_SUBSCRIPTION_TEMPLATE: {
         const subTemplate = action.data;
         const nextState = {...state};
-        nextState.subscriptionTemplates.push(subTemplate);
+        nextState.subscriptionTemplates = [...nextState.subscriptionTemplates,subTemplate];
 
         return nextState;
     }

@@ -100,9 +100,15 @@ type Subscriptions struct {
 	Channel       *ChannelSubscriptions
 }
 
+type ListSubscriptionTemplate map[string]SubscriptionTemplate
+
+type SubscriptionTemplates struct {
+	ByProjectID map[string]ListSubscriptionTemplate `json:"by_project_id"`
+}
+
 type Templates struct {
-	PluginVersion         string
-	SubscriptionTemplates []*SubscriptionTemplate
+	PluginVersion string
+	Templates     *SubscriptionTemplates
 }
 
 func NewSubscriptions() *Subscriptions {
@@ -112,10 +118,16 @@ func NewSubscriptions() *Subscriptions {
 	}
 }
 
+func NewSubscriptionTemplates() *SubscriptionTemplates {
+	return &SubscriptionTemplates{
+		ByProjectID: map[string]ListSubscriptionTemplate{},
+	}
+}
+
 func NewTemplates() *Templates {
 	return &Templates{
-		PluginVersion:         manifest.Version,
-		SubscriptionTemplates: []*SubscriptionTemplate{},
+		PluginVersion: manifest.Version,
+		Templates:     NewSubscriptionTemplates(),
 	}
 }
 
@@ -329,7 +341,14 @@ func (p *Plugin) addChannelSubscription(instanceID types.ID, newSubscription *Ch
 	})
 }
 
-func (p *Plugin) addSubscriptionTemplate(instanceID types.ID, newSubscriptionTemplate *SubscriptionTemplate) error {
+func (t *SubscriptionTemplates) add(newSubscriptionTemplate *SubscriptionTemplate, projectKey string) {
+	if _, valid := t.ByProjectID[projectKey]; !valid {
+		t.ByProjectID[projectKey] = make(ListSubscriptionTemplate)
+	}
+	t.ByProjectID[projectKey][newSubscriptionTemplate.ID] = *newSubscriptionTemplate
+}
+
+func (p *Plugin) addSubscriptionTemplate(instanceID types.ID, newSubscriptionTemplate *SubscriptionTemplate, client Client) error {
 	subKey := keyWithInstanceID(instanceID, templateKey)
 	return p.atomicModify(subKey, func(initialBytes []byte) ([]byte, error) {
 		oldSubscriptionTemplates, err := SubscriptionTemplatesFromJSON(initialBytes)
@@ -337,13 +356,17 @@ func (p *Plugin) addSubscriptionTemplate(instanceID types.ID, newSubscriptionTem
 			return nil, err
 		}
 
-		err = p.validateSubscriptionTemplate(newSubscriptionTemplate)
-		if err != nil {
+		projectKey := ""
+		if newSubscriptionTemplate.Filters.Projects.Len() == 1 {
+			projectKey = newSubscriptionTemplate.Filters.Projects.Elems()[0]
+		}
+
+		if err = p.validateSubscriptionTemplate(newSubscriptionTemplate, instanceID, client, projectKey); err != nil {
 			return nil, err
 		}
 
 		newSubscriptionTemplate.ID = model.NewId()
-		oldSubscriptionTemplates.SubscriptionTemplates = append(oldSubscriptionTemplates.SubscriptionTemplates, newSubscriptionTemplate)
+		oldSubscriptionTemplates.Templates.add(newSubscriptionTemplate, projectKey)
 
 		modifiedBytes, marshalErr := json.Marshal(&oldSubscriptionTemplates)
 		if marshalErr != nil {
@@ -354,7 +377,7 @@ func (p *Plugin) addSubscriptionTemplate(instanceID types.ID, newSubscriptionTem
 	})
 }
 
-func (p *Plugin) removeSubscriptionTemplate(instanceID types.ID, subscriptionTemplateID string) error {
+func (p *Plugin) removeSubscriptionTemplate(instanceID types.ID, subscriptionTemplateID, projectKey string) error {
 	subKey := keyWithInstanceID(instanceID, templateKey)
 	return p.atomicModify(subKey, func(initialBytes []byte) ([]byte, error) {
 		oldSubscriptionTemplates, err := SubscriptionTemplatesFromJSON(initialBytes)
@@ -362,13 +385,7 @@ func (p *Plugin) removeSubscriptionTemplate(instanceID types.ID, subscriptionTem
 			return nil, err
 		}
 
-		var newList []*SubscriptionTemplate
-		for _, template := range oldSubscriptionTemplates.SubscriptionTemplates {
-			if template.ID != subscriptionTemplateID {
-				newList = append(newList, template)
-			}
-		}
-		oldSubscriptionTemplates.SubscriptionTemplates = newList
+		delete(oldSubscriptionTemplates.Templates.ByProjectID[projectKey], subscriptionTemplateID)
 
 		modifiedBytes, marshalErr := json.Marshal(&oldSubscriptionTemplates)
 		if marshalErr != nil {
@@ -379,7 +396,7 @@ func (p *Plugin) removeSubscriptionTemplate(instanceID types.ID, subscriptionTem
 	})
 }
 
-func (p *Plugin) validateSubscriptionTemplate(subscription *SubscriptionTemplate) error {
+func (p *Plugin) validateSubscriptionTemplate(subscription *SubscriptionTemplate, instanceID types.ID, client Client, projectKey string) error {
 	if len(subscription.Name) == 0 {
 		return errors.New("please provide a name for the subscription")
 	}
@@ -399,7 +416,22 @@ func (p *Plugin) validateSubscriptionTemplate(subscription *SubscriptionTemplate
 	if (len(subscription.Filters.Projects)) == 0 {
 		return errors.New("please provide a project identifier")
 	}
-	// TODO make sure other template with same name doesn't exist
+
+	if _, err := client.GetProject(projectKey); err != nil {
+		return errors.WithMessagef(err, "failed to get project %q", projectKey)
+	}
+
+	templates, err := p.getSubscriptionTemplatesForInstance(instanceID)
+	if err != nil {
+		return err
+	}
+
+	for _, subscriptionTemplate := range templates.Templates.ByProjectID[projectKey] {
+		if subscriptionTemplate.Name == subscription.Name {
+			return errors.Errorf("Subscription name, '%s', already exists. Please choose another name.", subscription.Name)
+		}
+	}
+
 	return nil
 }
 
@@ -1073,7 +1105,24 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 			errors.Wrap(err, "unable to get channel subscription templates"))
 	}
 
-	return respondJSON(w, subscriptionTemplates)
+	client, _, _, err := p.getClient(instanceID, types.ID(mattermostUserID))
+	if err != nil {
+		return respondErr(w, http.StatusInternalServerError, err)
+	}
+
+	plist, err := client.ListProjects("", -1)
+	if err != nil {
+		return respondErr(w, http.StatusInternalServerError, err)
+	}
+
+	var subTemplates []SubscriptionTemplate
+	for _, project := range plist {
+		listSubscriptionTemplate := subscriptionTemplates.Templates.ByProjectID[project.Key]
+		for _, subTemplate := range listSubscriptionTemplate {
+			subTemplates = append(subTemplates, subTemplate)
+		}
+	}
+	return respondJSON(w, subTemplates)
 }
 
 func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
@@ -1084,10 +1133,12 @@ func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.R
 			errors.WithMessage(err, "failed to decode incoming request"))
 	}
 
-	// TODO implement ability to specify config and check if current user has sufficient permissions just like when creating subscriptions keeping open for now in view of https://github.com/mattermost/mattermost-plugin-jira/issues/604#issuecomment-872620201
-
-	err = p.addSubscriptionTemplate(subscriptionTemplate.InstanceID, &subscriptionTemplate)
+	client, _, _, err := p.getClient(subscriptionTemplate.InstanceID, types.ID(mattermostUserID))
 	if err != nil {
+		return respondErr(w, http.StatusInternalServerError, err)
+	}
+
+	if err = p.addSubscriptionTemplate(subscriptionTemplate.InstanceID, &subscriptionTemplate, client); err != nil {
 		return respondErr(w, http.StatusInternalServerError, err)
 	}
 
@@ -1112,8 +1163,13 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 			errors.New("bad or missing instance id"))
 	}
 
-	err := p.removeSubscriptionTemplate(instanceID, subscriptionTemplateID)
-	if err != nil {
+	projectKey := r.FormValue("project_key")
+	if projectKey == "" {
+		return respondErr(w, http.StatusBadRequest,
+			errors.New("missing project key"))
+	}
+
+	if err := p.removeSubscriptionTemplate(instanceID, subscriptionTemplateID, projectKey); err != nil {
 		return respondErr(w, http.StatusInternalServerError,
 			errors.Wrap(err, "unable to remove channel subscription template"))
 	}
