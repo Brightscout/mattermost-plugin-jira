@@ -1152,7 +1152,7 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 			errors.Wrap(err, "unable to get channel subscription templates"))
 	}
 
-	var subTemplates []SubscriptionTemplate
+	subTemplates := []SubscriptionTemplate{}
 
 	projectKey := r.FormValue("project_key")
 	if len(projectKey) < 1 {
@@ -1178,6 +1178,7 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 			subTemplates = append(subTemplates, subTemplate)
 		}
 	}
+
 	return respondJSON(w, subTemplates)
 }
 

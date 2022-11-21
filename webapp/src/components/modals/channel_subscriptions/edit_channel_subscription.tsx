@@ -56,6 +56,8 @@ export type Props = SharedProps & {
     finishEditSubscription: () => void;
     selectedSubscription: ChannelSubscription | null;
     creatingSubscription: boolean;
+    creatingSubscriptionTemplate: boolean;
+    selectedSubscriptionTemplate: ChannelSubscription | null;
 };
 
 export type State = {
@@ -63,6 +65,7 @@ export type State = {
     instanceID: string;
     fetchingIssueMetadata: boolean;
     jiraIssueMetadata: IssueMetadata | null;
+    templateOptions: ReactSelectOption[] | null;
     error: string | null;
     getMetaDataErr: string | null;
     submitting: boolean;
@@ -92,14 +95,33 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             subscriptionName = props.selectedSubscription.name;
         }
 
+        if (props.selectedSubscriptionTemplate) {
+            filters = Object.assign({}, filters, props.selectedSubscriptionTemplate.filters);
+            subscriptionName = props.selectedSubscriptionTemplate.name;
+        }
+
         filters.fields = filters.fields || [];
 
         let instanceID = '';
+        let fetchingIssueMetadata = false;
         if (this.props.selectedSubscription) {
             instanceID = this.props.selectedSubscription.instance_id;
+            const projects = this.props.selectedSubscription.filters.projects;
+            if (projects.length > 0) {
+                fetchingIssueMetadata = true;
+                this.fetchSubscriptionTemplateForProjectKey(instanceID, projects[0]);
+            }
         }
 
-        let fetchingIssueMetadata = false;
+        if (this.props.selectedSubscriptionTemplate) {
+            instanceID = this.props.selectedSubscriptionTemplate.instance_id;
+            const projects = this.props.selectedSubscriptionTemplate.filters.projects;
+            if (projects.length > 0) {
+                fetchingIssueMetadata = true;
+                this.fetchSubscriptionTemplateForProjectKey(instanceID, projects[0]);
+            }
+        }
+
         if (filters.projects.length && instanceID) {
             fetchingIssueMetadata = true;
             this.fetchIssueMetadata(filters.projects, instanceID);
@@ -109,6 +131,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             error: null,
             getMetaDataErr: null,
             submitting: false,
+            submittingTemplate: false,
             filters,
             fetchingIssueMetadata,
             jiraIssueMetadata: null,
@@ -117,6 +140,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             conflictingError: null,
             instanceID,
             selectedTemplateID: null,
+            templateOptions: null,
         };
 
         this.validator = new Validator();
@@ -136,6 +160,15 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
     deleteChannelSubscription = () => {
         if (this.props.selectedSubscription) {
             this.props.deleteChannelSubscription(this.props.selectedSubscription).then((res) => {
+                if (res.error) {
+                    this.setState({error: res.error.message});
+                } else {
+                    this.handleClose();
+                }
+            });
+        }
+        if (this.props.selectedSubscriptionTemplate) {
+            this.props.deleteSubscriptionTemplate(this.props.selectedSubscriptionTemplate).then((res) => {
                 if (res.error) {
                     this.setState({error: res.error.message});
                 } else {
@@ -232,6 +265,27 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         });
     };
 
+    fetchSubscriptionTemplateForProjectKey = (instanceId: string, projectId: string) => {
+        this.setState({selectedTemplateID: null});
+        this.props.fetchSubscriptionTemplatesForProjectKey(instanceId, projectId).then((subs) => {
+            if (subs.error) {
+                this.setState({error: subs.error.message});
+                return;
+            }
+
+            const subscriptionTemplate = subs.data as ChannelSubscription[];
+
+            let templateOptions: ReactSelectOption[] | null = null;
+            if (subscriptionTemplate) {
+                templateOptions = subscriptionTemplate.map((template: ChannelSubscription) => (
+                    {label: template.name || template.id, value: template.id}
+                ));
+            }
+
+            this.setState({templateOptions, fetchingIssueMetadata: false});
+        });
+    }
+
     handleJiraInstanceChange = (instanceID: string) => {
         if (instanceID === this.state.instanceID) {
             return;
@@ -269,6 +323,11 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             this.fetchIssueMetadata(projects, this.state.instanceID);
         }
 
+        if (this.state.instanceID && projectID) {
+            fetchingIssueMetadata = true;
+            this.fetchSubscriptionTemplateForProjectKey(this.state.instanceID, projectID);
+        }
+
         this.setState({
             fetchingIssueMetadata,
             getMetaDataErr: null,
@@ -281,7 +340,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         this.clearConflictingErrorMessage();
     };
 
-    handleCreate = (e?: React.FormEvent, isTemplate = false) => {
+    handleCreate = (e?: React.FormEvent) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
@@ -310,11 +369,21 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             instance_id: this.state.instanceID,
         } as ChannelSubscription;
 
-        if (isTemplate) {
+        if (this.props.selectedSubscriptionTemplate) {
+            this.setState({submittingTemplate: true, error: null});
+            subscription.id = this.props.selectedSubscriptionTemplate.id;
+            this.props.editSubscriptionTemplate(subscription).then((edited) => {
+                if (edited.error) {
+                    this.setState({error: edited.error.message, submittingTemplate: false});
+                    return;
+                }
+                this.handleClose(e);
+            });
+        } else if (this.props.creatingSubscriptionTemplate) {
             this.setState({submittingTemplate: true, error: null});
             this.props.createSubscriptionTemplate(subscription).then((created) => {
                 if (created.error) {
-                    this.setState({error: created.error.message, submitting: false});
+                    this.setState({error: created.error.message, submittingTemplate: false});
                     return;
                 }
                 this.handleClose(e);
@@ -340,10 +409,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             });
         }
     };
-
-    handleCreateTemplate = (e?: React.FormEvent) => {
-        this.handleCreate(e, true);
-    }
 
     handleTemplateChange =(_: any, templateID: string) => {
         const templateChoosen = this.props.subscriptionTemplates.find((template) => template.id === templateID);
@@ -382,6 +447,17 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             } else if (this.state.filters.projects[0] && !this.state.getMetaDataErr && this.state.jiraIssueMetadata) {
                 innerComponent = (
                     <React.Fragment>
+                        <ReactSelectSetting
+                            name={'template'}
+                            label={'Use Template'}
+                            options={this.state.templateOptions}
+                            onChange={this.handleTemplateChange}
+                            value={this.state.templateOptions == null ? null : this.state.templateOptions.find((option) => option.value === this.state.selectedTemplateID)}
+                            isDisabled={false}
+                            required={false}
+                            theme={this.props.theme}
+                            isLoading={false}
+                        />
                         <ReactSelectSetting
                             name={'events'}
                             label={'Events'}
@@ -430,26 +506,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 );
             }
 
-            const TemplateOptions: ReactSelectOption[] = this.props.subscriptionTemplates.map((template: ChannelSubscription) => (
-                {label: template.name || template.id, value: template.id}
-            ));
-
             component = (
                 <React.Fragment>
-
-                    <div className='container-fluid'>
-                        <ReactSelectSetting
-                            name={'template'}
-                            label={'Use Template'}
-                            options={TemplateOptions}
-                            onChange={this.handleTemplateChange}
-                            value={TemplateOptions.find((option) => option.value === this.state.selectedTemplateID) || null}
-                            isDisabled={false}
-                            required={false}
-                            theme={this.props.theme}
-                            isLoading={false}
-                        />
-                    </div>
                     <div className='container-fluid'>
                         <Input
                             label={'Subscription Name'}
@@ -486,13 +544,21 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
         const {showConfirmModal} = this.state;
 
-        let confirmDeleteMessage = 'Delete Subscription?';
-        if (this.props.selectedSubscription && this.props.selectedSubscription.name) {
-            confirmDeleteMessage = `Delete Subscription "${this.props.selectedSubscription.name}"?`;
+        let confirmDeleteMessage = '';
+        if (this.props.selectedSubscriptionTemplate) {
+            confirmDeleteMessage = 'Delete Subscription Template?';
+            if (this.props.selectedSubscriptionTemplate.name) {
+                confirmDeleteMessage = `Delete Subscription Template "${this.props.selectedSubscriptionTemplate.name}"?`;
+            }
+        } else {
+            confirmDeleteMessage = 'Delete Subscription?';
+            if (this.props.selectedSubscription && this.props.selectedSubscription.name) {
+                confirmDeleteMessage = `Delete Subscription "${this.props.selectedSubscription.name}"?`;
+            }
         }
 
         let confirmComponent;
-        if (this.props.selectedSubscription) {
+        if (this.props.selectedSubscription || this.props.selectedSubscriptionTemplate) {
             confirmComponent = (
                 <ConfirmModal
                     cancelButtonText={'Cancel'}
@@ -503,7 +569,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                     onCancel={this.handleCancelDelete}
                     onConfirm={this.handleConfirmDelete}
                     show={showConfirmModal}
-                    title={'Subscription'}
+                    title={this.props.selectedSubscription ? 'Subscription' : 'Subscription Template'}
                 />
             );
         }
@@ -518,13 +584,24 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         }
 
         const enableSubmitButton = Boolean(this.state.filters.projects[0]);
-        const enableDeleteButton = Boolean(this.props.selectedSubscription);
+        const enableDeleteButton = Boolean(this.props.selectedSubscription || this.props.selectedSubscriptionTemplate);
 
-        let saveSubscriptionButtonText = 'Save Subscription';
-        let headerText = 'Edit Jira Subscription for ';
-        if (this.props.creatingSubscription) {
-            saveSubscriptionButtonText = 'Add Subscription';
-            headerText = 'Add Jira Subscription in ';
+        let saveSubscriptionButtonText = '';
+        let headerText = '';
+        if (this.props.selectedSubscription || this.props.creatingSubscription) {
+            saveSubscriptionButtonText = 'Save Subscription';
+            headerText = 'Edit Jira Subscription for ';
+            if (this.props.creatingSubscription) {
+                saveSubscriptionButtonText = 'Add Subscription';
+                headerText = 'Add Jira Subscription in ';
+            }
+        } else {
+            saveSubscriptionButtonText = 'Add Template';
+            headerText = 'Add Subscription Template';
+            if (this.props.selectedSubscriptionTemplate && this.props.selectedSubscriptionTemplate.name) {
+                saveSubscriptionButtonText = 'Save Template';
+                headerText = 'Edit Subscription Template';
+            }
         }
 
         return (
@@ -532,7 +609,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 role='form'
             >
                 <div className='margin-bottom x3 text-center'>
-                    <h2>{headerText}<strong>{this.props.channel.display_name}</strong></h2>
+                    {this.props.selectedSubscription || this.props.creatingSubscription ? <h2>{headerText}<strong>{this.props.channel.display_name}</strong></h2> : <h2>{headerText}</h2>}
                 </div>
                 <div style={style.modalBody}>
                     {component}
@@ -551,26 +628,16 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
                     <FormButton
                         type='button'
-                        onClick={this.handleCreateTemplate}
-                        btnClass='btn-info pull-left'
-                        saving={this.state.submittingTemplate}
-                        defaultMessage={'Save as Template'}
-                        savingMessage='Saving...'
-                    />
-
-                    <FormButton
-                        type='button'
                         btnClass='btn-link'
                         defaultMessage='Cancel'
                         onClick={this.handleClose}
                     />
-
                     <FormButton
                         type='button'
                         onClick={this.handleCreate}
                         disabled={!enableSubmitButton}
                         btnClass='btn-primary'
-                        saving={this.state.submitting}
+                        saving={this.props.creatingSubscriptionTemplate || this.props.selectedSubscriptionTemplate ? this.state.submittingTemplate : this.state.submitting}
                         defaultMessage={saveSubscriptionButtonText}
                         savingMessage='Saving...'
                     />

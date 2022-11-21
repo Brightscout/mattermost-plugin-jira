@@ -238,6 +238,27 @@ export const createSubscriptionTemplate = (subscription: ChannelSubscription) =>
     };
 };
 
+export const editSubscriptionTemplate = (subscription: ChannelSubscription) => {
+    return async (dispatch, getState) => {
+        const baseUrl = getPluginServerRoute(getState());
+        try {
+            const data = await doFetch(`${baseUrl}/api/v2/subscriptionTemplates`, {
+                method: 'put',
+                body: JSON.stringify(subscription),
+            });
+
+            dispatch({
+                type: ActionTypes.EDITED_SUBSCRIPTION_TEMPLATE,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            return {error};
+        }
+    };
+};
+
 export const editChannelSubscription = (subscription: ChannelSubscription) => {
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());
@@ -283,7 +304,7 @@ export const deleteSubscriptionTemplate = (subscription: ChannelSubscription) =>
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());
         try {
-            await doFetch(`${baseUrl}/api/v2/subscriptionTemplates/${subscription.id}?instance_id=${subscription.instance_id}`, {
+            await doFetch(`${baseUrl}/api/v2/subscriptionTemplates/${subscription.id}?instance_id=${subscription.instance_id}&project_key=${subscription.filters.projects[0]}`, {
                 method: 'delete',
             });
             dispatch({
@@ -366,7 +387,7 @@ export const fetchAllSubscriptionTemplates = () => {
             if (res.status === 'rejected') {
                 errors.push(res.reason);
             } else {
-                data = data.concat(res.value.SubscriptionTemplates);
+                data = data.concat(res.value);
             }
         }
 
@@ -380,6 +401,25 @@ export const fetchAllSubscriptionTemplates = () => {
         });
 
         return {data};
+    };
+};
+
+export const fetchSubscriptionTemplatesForProjectKey = (instanceId: string, projectKey: string) => {
+    return async (dispatch, getState) => {
+        const baseUrl = getPluginServerRoute(getState());
+        try {
+            const data = await doFetch(`${baseUrl}/api/v2/subscriptionTemplates?instance_id=${instanceId}&project_key=${projectKey}`, {
+                method: 'get',
+            });
+            dispatch({
+                type: ActionTypes.RECEIVED_SUBSCRIPTION_TEMPLATES_PROJECT_KEY,
+                data,
+            });
+
+            return {data};
+        } catch (error) {
+            return {error};
+        }
     };
 };
 
