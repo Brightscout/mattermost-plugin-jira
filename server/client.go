@@ -26,6 +26,7 @@ import (
 )
 
 const autocompleteSearchRoute = "2/jql/autocompletedata/suggestions"
+const commentvisibilityRoute = "2/user"
 const userSearchRoute = "2/user/assignable/search"
 const unrecognizedEndpoint = "_unrecognized"
 
@@ -64,6 +65,7 @@ type SearchService interface {
 	SearchUsersAssignableToIssue(issueKey, query string, maxResults int) ([]jira.User, error)
 	SearchUsersAssignableInProject(projectKey, query string, maxResults int) ([]jira.User, error)
 	SearchAutoCompleteFields(params map[string]string) (*AutoCompleteResult, error)
+	SearchCommentVisibilityFields(params map[string]string) (*CommentVisibilityResult, error)
 }
 
 // IssueService is the interface for issue-related APIs.
@@ -252,6 +254,18 @@ type AutoCompleteResult struct {
 	Results []Result `json:"results"`
 }
 
+type Name struct {
+	Name string `json:"name"`
+}
+
+type Group struct {
+	Items []Name `json:"items"`
+}
+
+type CommentVisibilityResult struct {
+	Groups Group `json:"groups"`
+}
+
 // SearchAutoCompleteFields searches fieldValue specified in the params and returns autocomplete suggestions
 // for that fieldValue
 func (client JiraClient) SearchAutoCompleteFields(params map[string]string) (*AutoCompleteResult, error) {
@@ -261,6 +275,18 @@ func (client JiraClient) SearchAutoCompleteFields(params map[string]string) (*Au
 		return nil, err
 	}
 
+	return result, nil
+}
+
+// SearchCommentVisibilityFields searches fieldValue specified in the params and returns comment visibility suggestions
+// for that fieldValue
+func (client JiraClient) SearchCommentVisibilityFields(params map[string]string) (*CommentVisibilityResult, error) {
+	result := &CommentVisibilityResult{}
+	err := client.RESTGet(commentvisibilityRoute, params, result)
+	if err != nil {
+		return nil, err
+	}
+	result.Groups.Items = append(result.Groups.Items, Name{"visible-to-all-users"})
 	return result, nil
 }
 
