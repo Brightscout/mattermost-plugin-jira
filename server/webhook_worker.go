@@ -55,33 +55,23 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 	isCommentEvent := wh.Events().Intersection(commentEvents).Len() > 0
 	visibilityAttribute := ""
 	if isCommentEvent {
-		// We will only send webhook events if we have a connected instance.
-		instance, err := ww.p.instanceStore.LoadInstance(msg.InstanceID)
-		if err != nil {
-			return err
-		}
-
-		mattermostUserID, err := ww.p.userStore.LoadMattermostUserID(instance.GetID(), v.JiraWebhook.Comment.Author.AccountID)
+		mattermostUserID, err := ww.p.userStore.LoadMattermostUserID(msg.InstanceID, v.JiraWebhook.Comment.Author.AccountID)
 		if err != nil {
 			ww.p.API.LogInfo("Commentator is not connected with the mattermost", "Error", err.Error())
 			return err
 		}
-		c, err := ww.p.userStore.LoadConnection(instance.GetID(), mattermostUserID)
+
+		client, _, _, err := ww.p.getClient(types.ID(msg.InstanceID), types.ID(mattermostUserID))
 		if err != nil {
 			return err
 		}
 
-		client, err := instance.GetClient(c)
-		if err != nil {
+		comment := jira.Comment{}
+		if err = client.RESTGet(v.JiraWebhook.Comment.Self, nil, &comment); err != nil {
 			return err
 		}
 
-		visibility := jira.Comment{}
-		if err = client.RESTGet(v.JiraWebhook.Comment.Self, nil, &visibility); err != nil {
-			return err
-		}
-
-		visibilityAttribute = visibility.Visibility.Value
+		visibilityAttribute = comment.Visibility.Value
 	}
 
 	channelsSubscribed, err := ww.p.getChannelsSubscribed(v, msg.InstanceID, visibilityAttribute)

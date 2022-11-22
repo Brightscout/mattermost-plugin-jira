@@ -29,7 +29,7 @@ const (
 	descriptionField       = "description"
 	resolutionField        = "resolution"
 	headerMattermostUserID = "Mattermost-User-ID"
-	instanceIDBaseURL      = "instance_id"
+	instanceIDQueryParam   = "instance_id"
 )
 
 func makePost(userID, channelID, message string) *model.Post {
@@ -408,8 +408,7 @@ func (p *Plugin) GetCreateIssueMetadataForProjects(instanceID, mattermostUserID 
 
 func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.Request) (int, error) {
 	if r.Method != http.MethodGet {
-		return http.StatusMethodNotAllowed,
-			errors.New("Request: " + r.Method + " is not allowed, must be GET")
+		return http.StatusMethodNotAllowed, fmt.Errorf("Request: " + r.Method + " is not allowed, must be GET")
 	}
 
 	mattermostUserID := r.Header.Get(headerMattermostUserID)
@@ -417,7 +416,7 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 		return http.StatusUnauthorized, errors.New("not authorized")
 	}
 
-	instanceID := r.FormValue(instanceIDBaseURL)
+	instanceID := r.FormValue(instanceIDQueryParam)
 
 	client, _, connection, err := p.getClient(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
@@ -440,14 +439,12 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		return http.StatusInternalServerError,
-			errors.WithMessage(err, "failed to marshal the response")
+		return http.StatusInternalServerError, errors.WithMessage(err, "failed to marshal the response")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if _, err = w.Write(jsonResponse); err != nil {
-		return http.StatusInternalServerError,
-			errors.WithMessage(err, "failed to write response")
+		return http.StatusInternalServerError, errors.WithMessage(err, "failed to write the response")
 	}
 	return http.StatusOK, nil
 }

@@ -31,6 +31,7 @@ const (
 	FilterEmpty      = "empty"
 
 	MaxSubscriptionNameLength = 100
+	CommentVisibility         = "commentVisibility"
 )
 
 type FieldFilter struct {
@@ -161,7 +162,7 @@ func (p *Plugin) matchesSubsciptionFilters(wh *webhook, filters SubscriptionFilt
 		value := getIssueFieldValue(&wh.JiraWebhook.Issue, field.Key)
 		if visibilityAttribute != "" {
 			value[visibilityAttribute] = true
-		} else if field.Key == "commentVisibility" {
+		} else if field.Key == CommentVisibility {
 			value[visibleToAllUsers] = true
 		}
 
