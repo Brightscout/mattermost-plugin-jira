@@ -33,10 +33,9 @@ export default class JiraCommentVisibilitySelector extends React.PureComponent<P
     };
 
     searchCommentVisibilityFields = (inputValue: string): Promise<ReactSelectOption[]> => {
-        const {instanceID} = this.props;
         const params = {
             fieldValue: inputValue,
-            instance_id: instanceID,
+            instance_id: this.props.instanceID,
             expand: 'groups',
         };
         return this.props.searchCommentVisibilityFields(params).then(({data}) => {

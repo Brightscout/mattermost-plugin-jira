@@ -159,7 +159,8 @@ export const searchAutoCompleteFields = (params) => {
 
 export const searchCommentVisibilityFields = (params) => {
     return async (dispatch, getState) => {
-        const url = getPluginServerRoute(getState()) + '/api/v2/get-commentvisibility-fields';
+        const baseUrl = getPluginServerRoute(getState());
+        const url = `${baseUrl}/api/v2/get-comment-visibility-fields`;
         return doFetchWithResponse(`${url}${buildQueryString(params)}`);
     };
 };

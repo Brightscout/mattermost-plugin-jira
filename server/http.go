@@ -32,7 +32,7 @@ const (
 	routeAPIGetJiraProjectMetadata              = "/api/v2/get-jira-project-metadata"
 	routeAPIGetSearchIssues                     = "/api/v2/get-search-issues"
 	routeAPIGetAutoCompleteFields               = "/api/v2/get-search-autocomplete-fields"
-	routeAPIGetCommentVisibilityFields          = "/api/v2/get-commentvisibility-fields"
+	routeAPIGetCommentVisibilityFields          = "/api/v2/get-comment-visibility-fields"
 	routeAPIGetSearchUsers                      = "/api/v2/get-search-users"
 	routeAPIAttachCommentToIssue                = "/api/v2/attach-comment-to-issue"
 	routeAPIUserInfo                            = "/api/v2/userinfo"

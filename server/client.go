@@ -26,9 +26,10 @@ import (
 )
 
 const autocompleteSearchRoute = "2/jql/autocompletedata/suggestions"
-const commentvisibilityRoute = "2/user"
+const commentVisibilityRoute = "2/user"
 const userSearchRoute = "2/user/assignable/search"
 const unrecognizedEndpoint = "_unrecognized"
+const visibleToAllUsers = "visible-to-all-users"
 
 // Client is the combined interface for all upstream APIs and convenience methods.
 type Client interface {
@@ -254,12 +255,12 @@ type AutoCompleteResult struct {
 	Results []Result `json:"results"`
 }
 
-type Name struct {
+type Item struct {
 	Name string `json:"name"`
 }
 
 type Group struct {
-	Items []Name `json:"items"`
+	Items []Item `json:"items"`
 }
 
 type CommentVisibilityResult struct {
@@ -278,15 +279,14 @@ func (client JiraClient) SearchAutoCompleteFields(params map[string]string) (*Au
 	return result, nil
 }
 
-// SearchCommentVisibilityFields searches fieldValue specified in the params and returns comment visibility suggestions
+// SearchCommentVisibilityFields searches fieldValue specified in the params and returns the comment visibility suggestions
 // for that fieldValue
 func (client JiraClient) SearchCommentVisibilityFields(params map[string]string) (*CommentVisibilityResult, error) {
 	result := &CommentVisibilityResult{}
-	err := client.RESTGet(commentvisibilityRoute, params, result)
-	if err != nil {
+	if err := client.RESTGet(commentVisibilityRoute, params, result); err != nil {
 		return nil, err
 	}
-	result.Groups.Items = append(result.Groups.Items, Name{"visible-to-all-users"})
+	result.Groups.Items = append(result.Groups.Items, Item{visibleToAllUsers})
 	return result, nil
 }
 

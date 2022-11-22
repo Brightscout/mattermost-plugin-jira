@@ -22,12 +22,14 @@ import (
 )
 
 const (
-	labelsField      = "labels"
-	statusField      = "status"
-	reporterField    = "reporter"
-	priorityField    = "priority"
-	descriptionField = "description"
-	resolutionField  = "resolution"
+	labelsField            = "labels"
+	statusField            = "status"
+	reporterField          = "reporter"
+	priorityField          = "priority"
+	descriptionField       = "description"
+	resolutionField        = "resolution"
+	headerMattermostUserID = "Mattermost-User-ID"
+	instanceIDBaseURL      = "instance_id"
 )
 
 func makePost(userID, channelID, message string) *model.Post {
@@ -410,12 +412,12 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 			errors.New("Request: " + r.Method + " is not allowed, must be GET")
 	}
 
-	mattermostUserID := r.Header.Get("Mattermost-User-Id")
+	mattermostUserID := r.Header.Get(headerMattermostUserID)
 	if mattermostUserID == "" {
 		return http.StatusUnauthorized, errors.New("not authorized")
 	}
 
-	instanceID := r.FormValue("instance_id")
+	instanceID := r.FormValue(instanceIDBaseURL)
 
 	client, _, connection, err := p.getClient(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
@@ -427,24 +429,23 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 		"expand":     r.FormValue("expand"),
 		"accountId":  connection.AccountID,
 	}
-	results, err := client.SearchCommentVisibilityFields(params)
+	response, err := client.SearchCommentVisibilityFields(params)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 
-	if results == nil {
-		return http.StatusInternalServerError, errors.New("failed to return any results")
+	if response == nil {
+		return http.StatusInternalServerError, errors.New("failed to return the response")
 	}
 
-	bb, err := json.Marshal(results)
+	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		return http.StatusInternalServerError,
-			errors.WithMessage(err, "failed to marshal response")
+			errors.WithMessage(err, "failed to marshal the response")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(bb)
-	if err != nil {
+	if _, err = w.Write(jsonResponse); err != nil {
 		return http.StatusInternalServerError,
 			errors.WithMessage(err, "failed to write response")
 	}

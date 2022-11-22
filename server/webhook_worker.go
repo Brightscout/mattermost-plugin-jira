@@ -50,39 +50,34 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 	if err = v.JiraWebhook.expandIssue(ww.p, msg.InstanceID); err != nil {
 		return err
 	}
-	// We will only send webhook events if we have a connected instance.
-	instance, err := ww.p.instanceStore.LoadInstance(msg.InstanceID)
-	if err != nil {
-		// This isn't an internal server error. There's just no instance installed.
-		return err
-	}
 
-	comments := v.JiraWebhook.Issue.Fields.Comments.Comments
-	mattermostUserID, err := ww.p.userStore.LoadMattermostUserID(instance.GetID(), comments[len(comments)-1].Author.AccountID)
-	if err != nil {
-		return err
-	}
-
-	// Check if the user has permissions.
-	c, err := ww.p.userStore.LoadConnection(instance.GetID(), mattermostUserID)
-	if err != nil {
-		// Not connected to Jira, so can't check permissions
-		return err
-	}
-
-	client, err := instance.GetClient(c)
-	if err != nil {
-		return err
-	}
-
-	// If this is a comment-related webhook, we need to check if they have permissions to read that.
-	// Otherwise, check if they can view the issue.
+	// To check if this is comment-related webhook payload
 	isCommentEvent := wh.Events().Intersection(commentEvents).Len() > 0
 	visibilityAttribute := ""
 	if isCommentEvent {
-		visibility := jira.Comment{}
-		err = client.RESTGet(v.JiraWebhook.Comment.Self, nil, &visibility)
+		// We will only send webhook events if we have a connected instance.
+		instance, err := ww.p.instanceStore.LoadInstance(msg.InstanceID)
 		if err != nil {
+			return err
+		}
+
+		mattermostUserID, err := ww.p.userStore.LoadMattermostUserID(instance.GetID(), v.JiraWebhook.Comment.Author.AccountID)
+		if err != nil {
+			ww.p.API.LogInfo("Commentator is not connected with the mattermost", "Error", err.Error())
+			return err
+		}
+		c, err := ww.p.userStore.LoadConnection(instance.GetID(), mattermostUserID)
+		if err != nil {
+			return err
+		}
+
+		client, err := instance.GetClient(c)
+		if err != nil {
+			return err
+		}
+
+		visibility := jira.Comment{}
+		if err = client.RESTGet(v.JiraWebhook.Comment.Self, nil, &visibility); err != nil {
 			return err
 		}
 

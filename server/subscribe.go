@@ -162,7 +162,7 @@ func (p *Plugin) matchesSubsciptionFilters(wh *webhook, filters SubscriptionFilt
 		if visibilityAttribute != "" {
 			value[visibilityAttribute] = true
 		} else if field.Key == "commentVisibility" {
-			value["visible-to-all-users"] = true
+			value[visibleToAllUsers] = true
 		}
 
 		containsAny := value.ContainsAny(field.Values.Elems()...)

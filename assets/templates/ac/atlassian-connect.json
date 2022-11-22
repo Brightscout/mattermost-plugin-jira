@@ -1,6 +1,6 @@
 {
 	"key": "{{ .PluginKey }}",
-	"name": "Mattermost ({{ .ExternalURL }})",
+	"name": "Mattermost Plugin ({{ .ExternalURL }})",
 	"description": "Integrates Jira with Mattermost for in-place interactions and notifications",
 	"vendor": {
 		"name": "Mattermost",
