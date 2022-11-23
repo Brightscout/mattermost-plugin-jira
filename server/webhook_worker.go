@@ -51,7 +51,7 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 		return err
 	}
 
-	// To check if this is comment-related webhook payload
+	// To check if this is a comment-related webhook payload
 	isCommentEvent := wh.Events().Intersection(commentEvents).Len() > 0
 	visibilityAttribute := ""
 	if isCommentEvent {

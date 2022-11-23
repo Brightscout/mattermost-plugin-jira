@@ -419,7 +419,6 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 	}
 
 	instanceID := r.FormValue(instanceIDQueryParam)
-
 	client, _, connection, err := p.getClient(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -434,7 +433,6 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-
 	if response == nil {
 		return http.StatusInternalServerError, errors.New("failed to return the response")
 	}
