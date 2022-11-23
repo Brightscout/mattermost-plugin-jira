@@ -61,7 +61,7 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 			return err
 		}
 
-		client, _, _, err := ww.p.getClient(types.ID(msg.InstanceID), types.ID(mattermostUserID))
+		client, _, _, err := ww.p.getClient(msg.InstanceID, mattermostUserID)
 		if err != nil {
 			return err
 		}

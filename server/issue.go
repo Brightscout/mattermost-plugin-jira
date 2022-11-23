@@ -30,6 +30,8 @@ const (
 	resolutionField        = "resolution"
 	headerMattermostUserID = "Mattermost-User-ID"
 	instanceIDQueryParam   = "instance_id"
+	fieldValueQueryParam   = "fieldValue"
+	expandQueryParam       = "expand"
 )
 
 func makePost(userID, channelID, message string) *model.Post {
@@ -424,8 +426,8 @@ func (p *Plugin) httpGetCommentVisibilityFields(w http.ResponseWriter, r *http.R
 	}
 
 	params := map[string]string{
-		"fieldValue": r.FormValue("fieldValue"),
-		"expand":     r.FormValue("expand"),
+		"fieldValue": r.FormValue(fieldValueQueryParam),
+		"expand":     r.FormValue(expandQueryParam),
 		"accountId":  connection.AccountID,
 	}
 	response, err := client.SearchCommentVisibilityFields(params)
