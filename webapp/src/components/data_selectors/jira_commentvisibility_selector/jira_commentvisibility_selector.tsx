@@ -24,9 +24,8 @@ type Props = BackendSelectorProps & {
 };
 
 export default class JiraCommentVisibilitySelector extends React.PureComponent<Props> {
-    fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> => {
-        return (!this.props.value || (this.props.isMulti && !this.props.value.length)) ? [] : this.searchCommentVisibilityFields('');
-    }
+    fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> => 
+        (!this.props.value || (this.props.isMulti && !this.props.value.length)) ? [] : this.searchCommentVisibilityFields('');
 
     searchCommentVisibilityFields = (inputValue: string): Promise<ReactSelectOption[]> => {
         const params = {
