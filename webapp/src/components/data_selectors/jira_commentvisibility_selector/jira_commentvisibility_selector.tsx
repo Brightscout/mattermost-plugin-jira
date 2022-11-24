@@ -23,17 +23,17 @@ type Props = BackendSelectorProps & {
     fieldName: string;
 };
 
-export default class JiraCommentVisibilitySelector extends React.PureComponent<Props> {
-    fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> => 
-        (!this.props.value || (this.props.isMulti && !this.props.value.length)) ? [] : this.searchCommentVisibilityFields('');
+export default function JiraCommentVisibilitySelector(props: Props) {
+    const fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> => 
+        (!props.value || (props.isMulti && !props.value.length)) ? [] : searchCommentVisibilityFields('');
 
-    searchCommentVisibilityFields = (inputValue: string): Promise<ReactSelectOption[]> => {
+        const searchCommentVisibilityFields = async (inputValue: string): Promise<ReactSelectOption[]> => {
         const params = {
             fieldValue: inputValue,
-            instance_id: this.props.instanceID,
+            instance_id: props.instanceID,
             expand: 'groups',
         };
-        return this.props.searchCommentVisibilityFields(params).then(({data}) => {
+        return props.searchCommentVisibilityFields(params).then(({data}) => {
             return data.groups.items.map((suggestion) => ({
                 value: suggestion.name,
                 label: stripHTML(suggestion.name),
@@ -41,13 +41,11 @@ export default class JiraCommentVisibilitySelector extends React.PureComponent<P
         });
     };
 
-    render = (): JSX.Element => {
-        return (
-            <BackendSelector
-                {...this.props}
-                fetchInitialSelectedValues={this.fetchInitialSelectedValues}
-                search={this.searchCommentVisibilityFields}
-            />
-        );
-    }
+    return (
+        <BackendSelector
+            {...props}
+            fetchInitialSelectedValues={fetchInitialSelectedValues}
+            search={searchCommentVisibilityFields}
+        />
+    );
 }
