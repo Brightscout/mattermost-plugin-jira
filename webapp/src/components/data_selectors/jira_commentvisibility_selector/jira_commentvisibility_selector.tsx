@@ -23,14 +23,15 @@ type Props = BackendSelectorProps & {
     fieldName: string;
 };
 
-export default function JiraCommentVisibilitySelector(props: Props) {
-    const fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> => 
-        (!props.value || (props.isMulti && !props.value.length)) ? [] : searchCommentVisibilityFields('');
+const JiraCommentVisibilitySelector = (props: Props) => {
+    const {value, isMulti, instanceID} = props;
+    const fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> =>
+        ((!value || (isMulti && !value.length)) ? [] : searchCommentVisibilityFields(''));
 
-        const searchCommentVisibilityFields = async (inputValue: string): Promise<ReactSelectOption[]> => {
+    const searchCommentVisibilityFields = async (inputValue: string): Promise<ReactSelectOption[]> => {
         const params = {
             fieldValue: inputValue,
-            instance_id: props.instanceID,
+            instance_id: instanceID,
             expand: 'groups',
         };
         return props.searchCommentVisibilityFields(params).then(({data}) => {
@@ -48,4 +49,6 @@ export default function JiraCommentVisibilitySelector(props: Props) {
             search={searchCommentVisibilityFields}
         />
     );
-}
+};
+
+export default JiraCommentVisibilitySelector;
