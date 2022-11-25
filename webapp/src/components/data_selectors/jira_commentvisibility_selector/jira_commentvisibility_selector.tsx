@@ -24,17 +24,17 @@ type Props = BackendSelectorProps & {
 };
 
 const JiraCommentVisibilitySelector = (props: Props) => {
-    const {value, isMulti, instanceID} = props;
+    const {value, isMulti, instanceID, searchCommentVisibilityFields} = props;
     const fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> =>
-        ((!value || (isMulti && !value.length)) ? [] : searchCommentVisibilityFields(''));
+        ((!value || (isMulti && !value.length)) ? [] : commentVisibilityFields(''));
 
-    const searchCommentVisibilityFields = async (inputValue: string): Promise<ReactSelectOption[]> => {
+    const commentVisibilityFields = async (inputValue: string): Promise<ReactSelectOption[]> => {
         const params = {
             fieldValue: inputValue,
             instance_id: instanceID,
             expand: 'groups',
         };
-        return props.searchCommentVisibilityFields(params).then(({data}) => {
+        return searchCommentVisibilityFields(params).then(({data}) => {
             return data.groups.items.map((suggestion) => ({
                 value: suggestion.name,
                 label: stripHTML(suggestion.name),
@@ -46,7 +46,7 @@ const JiraCommentVisibilitySelector = (props: Props) => {
         <BackendSelector
             {...props}
             fetchInitialSelectedValues={fetchInitialSelectedValues}
-            search={searchCommentVisibilityFields}
+            search={commentVisibilityFields}
         />
     );
 };
