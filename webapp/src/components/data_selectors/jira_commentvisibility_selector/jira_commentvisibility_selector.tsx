@@ -23,17 +23,18 @@ type Props = BackendSelectorProps & {
     fieldName: string;
 };
 
-export default class JiraCommentVisibilitySelector extends React.PureComponent<Props> {
-    fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> => 
-        (!this.props.value || (this.props.isMulti && !this.props.value.length)) ? [] : this.searchCommentVisibilityFields('');
+const JiraCommentVisibilitySelector = (props: Props) => {
+    const {value, isMulti, instanceID, searchCommentVisibilityFields} = props;
+    const fetchInitialSelectedValues = async (): Promise<ReactSelectOption[]> =>
+        ((!value || (isMulti && !value.length)) ? [] : commentVisibilityFields(''));
 
-    searchCommentVisibilityFields = (inputValue: string): Promise<ReactSelectOption[]> => {
+    const commentVisibilityFields = async (inputValue: string): Promise<ReactSelectOption[]> => {
         const params = {
             fieldValue: inputValue,
-            instance_id: this.props.instanceID,
+            instance_id: instanceID,
             expand: 'groups',
         };
-        return this.props.searchCommentVisibilityFields(params).then(({data}) => {
+        return searchCommentVisibilityFields(params).then(({data}) => {
             return data.groups.items.map((suggestion) => ({
                 value: suggestion.name,
                 label: stripHTML(suggestion.name),
@@ -41,13 +42,13 @@ export default class JiraCommentVisibilitySelector extends React.PureComponent<P
         });
     };
 
-    render = (): JSX.Element => {
-        return (
-            <BackendSelector
-                {...this.props}
-                fetchInitialSelectedValues={this.fetchInitialSelectedValues}
-                search={this.searchCommentVisibilityFields}
-            />
-        );
-    }
-}
+    return (
+        <BackendSelector
+            {...props}
+            fetchInitialSelectedValues={fetchInitialSelectedValues}
+            search={commentVisibilityFields}
+        />
+    );
+};
+
+export default JiraCommentVisibilitySelector;

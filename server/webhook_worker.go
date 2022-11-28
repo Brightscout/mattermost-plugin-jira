@@ -55,20 +55,20 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 	isCommentEvent := wh.Events().Intersection(commentEvents).Len() > 0
 	visibilityAttribute := ""
 	if isCommentEvent {
-		mattermostUserID, err := ww.p.userStore.LoadMattermostUserID(msg.InstanceID, v.JiraWebhook.Comment.Author.AccountID)
-		if err != nil {
-			ww.p.API.LogInfo("Commentator is not connected with the mattermost", "Error", err.Error())
-			return err
+		mattermostUserID, er := ww.p.userStore.LoadMattermostUserID(msg.InstanceID, v.JiraWebhook.Comment.Author.AccountID)
+		if er != nil {
+			ww.p.API.LogInfo("Commentator is not connected with the mattermost", "Error", er.Error())
+			return er
 		}
 
-		client, _, _, err := ww.p.getClient(msg.InstanceID, mattermostUserID)
-		if err != nil {
-			return err
+		client, _, _, er := ww.p.getClient(msg.InstanceID, mattermostUserID)
+		if er != nil {
+			return er
 		}
 
 		comment := jira.Comment{}
-		if err = client.RESTGet(v.JiraWebhook.Comment.Self, nil, &comment); err != nil {
-			return err
+		if er = client.RESTGet(v.JiraWebhook.Comment.Self, nil, &comment); er != nil {
+			return er
 		}
 
 		visibilityAttribute = comment.Visibility.Value
