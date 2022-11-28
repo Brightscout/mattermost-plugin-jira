@@ -57,7 +57,7 @@ func (ww webhookWorker) process(msg *webhookMessage) (err error) {
 	if isCommentEvent {
 		mattermostUserID, er := ww.p.userStore.LoadMattermostUserID(msg.InstanceID, v.JiraWebhook.Comment.Author.AccountID)
 		if er != nil {
-			ww.p.API.LogInfo("Commentator is not connected with the mattermost", "Error", err.Error())
+			ww.p.API.LogInfo("Commentator is not connected with the mattermost", "Error", er.Error())
 			return er
 		}
 
