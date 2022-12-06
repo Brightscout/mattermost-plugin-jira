@@ -106,20 +106,10 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         let fetchingIssueMetadata = false;
         if (this.props.selectedSubscription) {
             instanceID = this.props.selectedSubscription.instance_id;
-            const projects = this.props.selectedSubscription.filters.projects;
-            if (projects.length > 0) {
-                fetchingIssueMetadata = true;
-                this.fetchSubscriptionTemplateForProjectKey(instanceID, projects[0]);
-            }
         }
 
         if (this.props.selectedSubscriptionTemplate) {
             instanceID = this.props.selectedSubscriptionTemplate.instance_id;
-            const projects = this.props.selectedSubscriptionTemplate.filters.projects;
-            if (projects.length > 0) {
-                fetchingIssueMetadata = true;
-                this.fetchSubscriptionTemplateForProjectKey(instanceID, projects[0]);
-            }
         }
 
         if (filters.projects.length && instanceID) {
@@ -144,6 +134,22 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         };
 
         this.validator = new Validator();
+    }
+
+    componentDidMount() {
+        if (this.props.selectedSubscription) {
+            const projects = this.props.selectedSubscription.filters.projects;
+            if (projects.length > 0) {
+                this.fetchSubscriptionTemplateForProjectKey(this.state.instanceID, projects[0]);
+            }
+        }
+
+        if (this.props.selectedSubscriptionTemplate) {
+            const projects = this.props.selectedSubscriptionTemplate.filters.projects;
+            if (projects.length > 0) {
+                this.fetchSubscriptionTemplateForProjectKey(this.state.instanceID, projects[0]);
+            }
+        }
     }
 
     handleClose = (e?: React.FormEvent) => {
@@ -266,7 +272,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
     };
 
     fetchSubscriptionTemplateForProjectKey = (instanceId: string, projectId: string) => {
-        this.setState({selectedTemplateID: null});
+        this.setState({selectedTemplateID: null, fetchingIssueMetadata: true});
         this.props.fetchSubscriptionTemplatesForProjectKey(instanceId, projectId).then((subs) => {
             if (subs.error) {
                 this.setState({error: subs.error.message});
