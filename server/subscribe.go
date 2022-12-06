@@ -33,6 +33,8 @@ const (
 
 	MaxSubscriptionNameLength         = 100
 	MaxSubscriptionTemplateNameLength = 100
+
+	QueryParamProjectKey = "project_key"
 )
 
 type FieldFilter struct {
@@ -1152,30 +1154,30 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 			errors.Wrap(err, "unable to get channel subscription templates"))
 	}
 
-	var subTemplates []SubscriptionTemplate
+	var subTemplates []*SubscriptionTemplate
 
-	projectKey := r.FormValue("project_key")
+	projectKey := r.FormValue(QueryParamProjectKey)
 	if len(projectKey) < 1 {
 		client, _, _, err := p.getClient(instanceID, types.ID(mattermostUserID))
 		if err != nil {
 			return respondErr(w, http.StatusInternalServerError, err)
 		}
 
-		plist, err := client.ListProjects("", -1)
+		pList, err := client.ListProjects("", -1)
 		if err != nil {
 			return respondErr(w, http.StatusInternalServerError, err)
 		}
 
-		for _, project := range plist {
+		for _, project := range pList {
 			listSubscriptionTemplate := subscriptionTemplates.Templates.ByProjectID[project.Key]
 			for _, subTemplate := range listSubscriptionTemplate {
-				subTemplates = append(subTemplates, subTemplate)
+				subTemplates = append(subTemplates, &subTemplate)
 			}
 		}
 
 	} else {
 		for _, subTemplate := range subscriptionTemplates.Templates.ByProjectID[projectKey] {
-			subTemplates = append(subTemplates, subTemplate)
+			subTemplates = append(subTemplates, &subTemplate)
 		}
 	}
 	return respondJSON(w, subTemplates)
@@ -1183,8 +1185,7 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 
 func (p *Plugin) httpEditSubscriptionTemplates(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
 	subscriptionTemplate := SubscriptionTemplate{}
-	err := json.NewDecoder(r.Body).Decode(&subscriptionTemplate)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&subscriptionTemplate); err != nil {
 		return respondErr(w, http.StatusBadRequest,
 			errors.WithMessage(err, "failed to decode the incoming request"))
 	}
@@ -1244,7 +1245,7 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 			errors.New("bad or missing instance id"))
 	}
 
-	projectKey := r.FormValue("project_key")
+	projectKey := r.FormValue(QueryParamProjectKey)
 	if projectKey == "" {
 		return respondErr(w, http.StatusBadRequest,
 			errors.New("missing project key"))
