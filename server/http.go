@@ -37,7 +37,7 @@ const (
 	routeAPIUserInfo                            = "/api/v2/userinfo"
 	routeAPISubscribeWebhook                    = "/api/v2/webhook"
 	routeAPISubscriptionsChannel                = "/api/v2/subscriptions/channel"
-	routeAPISubscriptionTemplates               = "/api/v2/subscriptionTemplates"
+	routeAPISubscriptionTemplates               = "/api/v2/subscription-templates"
 	routeAPISettingsInfo                        = "/api/v2/settingsinfo"
 	routeIssueTransition                        = "/api/v2/transition"
 	routeAPIUserDisconnect                      = "/api/v3/disconnect"

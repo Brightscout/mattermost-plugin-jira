@@ -155,8 +155,7 @@ func SubscriptionsFromJSON(bytes []byte, instanceID types.ID) (*Subscriptions, e
 func SubscriptionTemplatesFromJSON(bytes []byte) (*Templates, error) {
 	var subs *Templates
 	if len(bytes) != 0 {
-		unmarshalErr := json.Unmarshal(bytes, &subs)
-		if unmarshalErr != nil {
+		if unmarshalErr := json.Unmarshal(bytes, &subs); unmarshalErr != nil {
 			return nil, unmarshalErr
 		}
 		subs.PluginVersion = manifest.Version
@@ -252,6 +251,7 @@ func (p *Plugin) getTemplates(instanceID types.ID) (*Templates, error) {
 	if appErr != nil {
 		return nil, appErr
 	}
+
 	return SubscriptionTemplatesFromJSON(data)
 }
 
@@ -345,6 +345,7 @@ func (t *SubscriptionTemplates) add(newSubscriptionTemplate *SubscriptionTemplat
 	if _, valid := t.ByProjectID[projectKey]; !valid {
 		t.ByProjectID[projectKey] = make(ListSubscriptionTemplate)
 	}
+
 	t.ByProjectID[projectKey][newSubscriptionTemplate.ID] = *newSubscriptionTemplate
 }
 
@@ -401,7 +402,7 @@ func (p *Plugin) validateSubscriptionTemplate(subscription *SubscriptionTemplate
 		return errors.New("please provide a name for the subscription")
 	}
 
-	if len(subscription.Name) > MaxSubscriptionTemplateNameLength {
+	if len(subscription.Name) >= MaxSubscriptionTemplateNameLength {
 		return errors.Errorf("please provide a name less than %d characters", MaxSubscriptionTemplateNameLength)
 	}
 
@@ -1127,8 +1128,7 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 
 func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
 	subscriptionTemplate := SubscriptionTemplate{}
-	err := json.NewDecoder(r.Body).Decode(&subscriptionTemplate)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&subscriptionTemplate); err != nil {
 		return respondErr(w, http.StatusBadRequest,
 			errors.WithMessage(err, "failed to decode incoming request"))
 	}
@@ -1153,8 +1153,7 @@ func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.R
 func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
 	subscriptionTemplateID := strings.TrimPrefix(r.URL.Path, routeAPISubscriptionTemplates+"/")
 	if len(subscriptionTemplateID) != 26 {
-		return respondErr(w, http.StatusBadRequest,
-			errors.New("bad subscription id"))
+		return respondErr(w, http.StatusBadRequest, errors.New("bad subscription id"))
 	}
 
 	instanceID := types.ID(r.FormValue("instance_id"))
