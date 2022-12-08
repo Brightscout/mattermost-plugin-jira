@@ -29,9 +29,7 @@ describe('components/EditChannelSubscription', () => {
         fetchSubscriptionTemplatesForProjectKey: jest.fn().mockResolvedValue({}),
         sendEphemeralPost: jest.fn().mockResolvedValue({}),
         getConnected: jest.fn().mockResolvedValue({}),
-
         fetchJiraProjectMetadataForAllInstances: jest.fn().mockResolvedValue({}),
-
         fetchJiraIssueMetadataForProjects: jest.fn().mockResolvedValue({data: cloudIssueMetadata}),
     };
 
