@@ -33,6 +33,11 @@ const (
 
 	MaxSubscriptionNameLength         = 100
 	MaxSubscriptionTemplateNameLength = 100
+
+	QueryParamInstanceID = "instance_id"
+	QueryParamProjectID  = "project_key"
+
+	HeaderMattermostUserID = "Mattermost-User-Id"
 )
 
 type FieldFilter struct {
@@ -1093,17 +1098,15 @@ func (p *Plugin) httpChannelGetSubscriptions(w http.ResponseWriter, r *http.Requ
 }
 
 func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
-	instanceID := types.ID(r.FormValue("instance_id"))
+	instanceID := types.ID(r.FormValue(QueryParamInstanceID))
 
 	if len(instanceID) < 2 {
-		return respondErr(w, http.StatusBadRequest,
-			errors.New("bad or missing instance id"))
+		return respondErr(w, http.StatusBadRequest, errors.New("bad or missing instance id"))
 	}
 
 	subscriptionTemplates, err := p.getSubscriptionTemplatesForInstance(instanceID)
 	if err != nil {
-		return respondErr(w, http.StatusInternalServerError,
-			errors.Wrap(err, "unable to get channel subscription templates"))
+		return respondErr(w, http.StatusInternalServerError, errors.Wrap(err, "unable to get channel subscription templates"))
 	}
 
 	client, _, _, err := p.getClient(instanceID, types.ID(mattermostUserID))
@@ -1129,8 +1132,7 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
 	subscriptionTemplate := SubscriptionTemplate{}
 	if err := json.NewDecoder(r.Body).Decode(&subscriptionTemplate); err != nil {
-		return respondErr(w, http.StatusBadRequest,
-			errors.WithMessage(err, "failed to decode incoming request"))
+		return respondErr(w, http.StatusBadRequest, errors.WithMessage(err, "failed to decode incoming request"))
 	}
 
 	client, _, _, err := p.getClient(subscriptionTemplate.InstanceID, types.ID(mattermostUserID))
@@ -1156,21 +1158,18 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 		return respondErr(w, http.StatusBadRequest, errors.New("bad subscription id"))
 	}
 
-	instanceID := types.ID(r.FormValue("instance_id"))
+	instanceID := types.ID(r.FormValue(QueryParamInstanceID))
 	if len(instanceID) < 2 {
-		return respondErr(w, http.StatusBadRequest,
-			errors.New("bad or missing instance id"))
+		return respondErr(w, http.StatusBadRequest, errors.New("bad or missing instance id"))
 	}
 
-	projectKey := r.FormValue("project_key")
+	projectKey := r.FormValue(QueryParamProjectID)
 	if projectKey == "" {
-		return respondErr(w, http.StatusBadRequest,
-			errors.New("missing project key"))
+		return respondErr(w, http.StatusBadRequest, errors.New("missing project key"))
 	}
 
 	if err := p.removeSubscriptionTemplate(instanceID, subscriptionTemplateID, projectKey); err != nil {
-		return respondErr(w, http.StatusInternalServerError,
-			errors.Wrap(err, "unable to remove channel subscription template"))
+		return respondErr(w, http.StatusInternalServerError, errors.Wrap(err, "unable to remove channel subscription template"))
 	}
 
 	code, err := respondJSON(w, map[string]interface{}{"status": "OK"})
@@ -1202,7 +1201,7 @@ func (p *Plugin) httpChannelSubscriptions(w http.ResponseWriter, r *http.Request
 }
 
 func (p *Plugin) httpChannelSubscriptionTemplates(w http.ResponseWriter, r *http.Request) (int, error) {
-	mattermostUserID := r.Header.Get("Mattermost-User-Id")
+	mattermostUserID := r.Header.Get(HeaderMattermostUserID)
 	if mattermostUserID == "" {
 		return respondErr(w, http.StatusUnauthorized, errors.New("not authorized"))
 	}
