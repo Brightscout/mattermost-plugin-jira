@@ -307,6 +307,7 @@ export const deleteSubscriptionTemplate = (subscription: ChannelSubscription) =>
             await doFetch(`${baseUrl}/api/v2/subscriptionTemplates/${subscription.id}?instance_id=${subscription.instance_id}&project_key=${subscription.filters.projects[0]}`, {
                 method: 'delete',
             });
+
             dispatch({
                 type: ActionTypes.DELETED_SUBSCRIPTION_TEMPLATE,
                 data: subscription,
@@ -366,8 +367,7 @@ export const fetchAllSubscriptionTemplates = () => {
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());
         const connectedInstances = getUserConnectedInstances(getState());
-
-        const promises = connectedInstances.map((instance) => {
+        const instances = connectedInstances.map((instance) => {
             return doFetch(`${baseUrl}/api/v2/subscriptionTemplates?instance_id=${instance.instance_id}`, {
                 method: 'get',
             });
@@ -375,14 +375,13 @@ export const fetchAllSubscriptionTemplates = () => {
 
         let allResponses;
         try {
-            allResponses = await Promise.allSettled(promises);
+            allResponses = await Promise.allSettled(instances);
         } catch (error) {
             return {error};
         }
 
         const errors: string[] = [];
         let data: ChannelSubscription[] = [];
-
         for (const res of allResponses) {
             if (res.status === 'rejected') {
                 errors.push(res.reason);
@@ -391,7 +390,7 @@ export const fetchAllSubscriptionTemplates = () => {
             }
         }
 
-        if (errors.length > 0 && allResponses.length === errors.length) {
+        if (errors.length && allResponses.length === errors.length) {
             return {error: new Error(errors[0])};
         }
 
@@ -411,6 +410,7 @@ export const fetchSubscriptionTemplatesForProjectKey = (instanceId: string, proj
             const data = await doFetch(`${baseUrl}/api/v2/subscriptionTemplates?instance_id=${instanceId}&project_key=${projectKey}`, {
                 method: 'get',
             });
+
             dispatch({
                 type: ActionTypes.RECEIVED_SUBSCRIPTION_TEMPLATES_PROJECT_KEY,
                 data,
