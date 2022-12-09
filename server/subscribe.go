@@ -1215,14 +1215,11 @@ func (p *Plugin) httpEditSubscriptionTemplates(w http.ResponseWriter, r *http.Re
 		return code, err
 	}
 
-	_, appErr := p.API.CreatePost(&model.Post{
+	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
 		Message:   fmt.Sprintf("Jira subscription template, \"%v\", was updated by %v", subscriptionTemplate.Name, connection.DisplayName),
 	})
-	if appErr != nil {
-		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(appErr, "failed to create notification post"))
-	}
 
 	return http.StatusOK, nil
 }
@@ -1249,14 +1246,11 @@ func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.R
 		return code, err
 	}
 
-	_, appErr := p.API.CreatePost(&model.Post{
+	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
 		Message:   fmt.Sprintf("Jira subscription template, \"%v\", was added by %v", subscriptionTemplate.Name, connection.DisplayName),
 	})
-	if appErr != nil {
-		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(appErr, "failed to create notification post"))
-	}
 
 	return http.StatusOK, nil
 }
@@ -1300,15 +1294,11 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 		return code, err
 	}
 
-	_, appErr := p.API.CreatePost(&model.Post{
+	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
 		Message:   fmt.Sprintf("Jira subscription template, \"%v\", was removed by %v", subscriptionTemplate.Name, connection.DisplayName),
 	})
-	if appErr != nil {
-		return respondErr(w, http.StatusInternalServerError,
-			errors.WithMessage(appErr, "failed to create notification post"))
-	}
 
 	return http.StatusOK, nil
 }
