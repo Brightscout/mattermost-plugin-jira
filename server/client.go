@@ -260,7 +260,7 @@ type JiraUserGroup struct {
 }
 
 type JiraUserGroupCollection struct {
-	GroupsItem []JiraUserGroup `json:"items"`
+	JiraUserGroups []JiraUserGroup `json:"items"`
 }
 
 type CommentVisibilityResult struct {
@@ -286,7 +286,7 @@ func (client JiraClient) SearchCommentVisibilityFields(params map[string]string)
 	if err := client.RESTGet(commentVisibilityRoute, params, result); err != nil {
 		return nil, err
 	}
-	result.Groups.GroupsItem = append(result.Groups.GroupsItem, JiraUserGroup{visibleToAllUsers})
+	result.Groups.JiraUserGroups = append(result.Groups.JiraUserGroups, JiraUserGroup{visibleToAllUsers})
 	return result, nil
 }
 
