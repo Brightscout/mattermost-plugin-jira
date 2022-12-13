@@ -1218,7 +1218,7 @@ func (p *Plugin) httpEditSubscriptionTemplates(w http.ResponseWriter, r *http.Re
 	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription template, \"%v\", was updated by %v", subscriptionTemplate.Name, connection.DisplayName),
+		Message:   fmt.Sprintf("Jira subscription template, %q, was updated by %s", subscriptionTemplate.Name, connection.DisplayName),
 	})
 
 	return http.StatusOK, nil
@@ -1249,7 +1249,7 @@ func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.R
 	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription template, \"%v\", was added by %v", subscriptionTemplate.Name, connection.DisplayName),
+		Message:   fmt.Sprintf("Jira subscription template, %q, was added by %s", subscriptionTemplate.Name, connection.DisplayName),
 	})
 
 	return http.StatusOK, nil
@@ -1297,7 +1297,7 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription template, \"%v\", was removed by %v", subscriptionTemplate.Name, connection.DisplayName),
+		Message:   fmt.Sprintf("Jira subscription template, %q, was removed by %s", subscriptionTemplate.Name, connection.DisplayName),
 	})
 
 	return http.StatusOK, nil
