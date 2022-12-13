@@ -553,14 +553,14 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
         let confirmDeleteMessage = '';
         if (this.props.selectedSubscriptionTemplate) {
-            confirmDeleteMessage = 'Delete Subscription Template?';
+            confirmDeleteMessage = 'Are you sure to delete the subscription template?';
             if (this.props.selectedSubscriptionTemplate.name) {
-                confirmDeleteMessage = `Delete Subscription Template "${this.props.selectedSubscriptionTemplate.name}"?`;
+                confirmDeleteMessage = `Are you sure to delete the subscription template "${this.props.selectedSubscriptionTemplate.name}"?`;
             }
         } else {
-            confirmDeleteMessage = 'Delete Subscription?';
+            confirmDeleteMessage = 'Are you sure to delete the subscription?';
             if (this.props.selectedSubscription && this.props.selectedSubscription.name) {
-                confirmDeleteMessage = `Delete Subscription "${this.props.selectedSubscription.name}"?`;
+                confirmDeleteMessage = `Are you sure to delete the subscription "${this.props.selectedSubscription.name}"?`;
             }
         }
 
@@ -631,7 +631,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         disabled={!enableDeleteButton}
                         onClick={this.handleDeleteChannelSubscription}
                     />
-
                     <FormButton
                         type='button'
                         btnClass='btn-link'

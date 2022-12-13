@@ -9,7 +9,7 @@ import ActionTypes from 'action_types';
 import {doFetch, doFetchWithResponse, buildQueryString} from 'client';
 import {getPluginServerRoute, getInstalledInstances, getUserConnectedInstances} from 'selectors';
 import {isDesktopApp, isMinimumDesktopAppVersion} from 'utils/user_agent';
-import {ChannelSubscription, CreateIssueRequest, SearchIssueParams, InstanceType, ProjectMetadata, APIResponse} from 'types/model';
+import {ChannelSubscription, CreateIssueRequest, SearchIssueParams, InstanceType, ProjectMetadata, APIResponse, SubscriptionTemplate} from 'types/model';
 
 export const openConnectModal = () => {
     return {
@@ -217,13 +217,13 @@ export const createChannelSubscription = (subscription: ChannelSubscription) => 
     };
 };
 
-export const createSubscriptionTemplate = (subscription: ChannelSubscription) => {
+export const createSubscriptionTemplate = (subscriptionTemplate: SubscriptionTemplate) => {
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());
         try {
-            const data = await doFetch(`${baseUrl}/api/v2/subscriptionTemplates?channel_id=${subscription.channel_id}`, {
+            const data = await doFetch(`${baseUrl}/api/v2/subscriptionTemplates?channel_id=${subscriptionTemplate.channel_id}`, {
                 method: 'post',
-                body: JSON.stringify(subscription),
+                body: JSON.stringify(subscriptionTemplate),
             });
 
             dispatch({
@@ -238,13 +238,13 @@ export const createSubscriptionTemplate = (subscription: ChannelSubscription) =>
     };
 };
 
-export const editSubscriptionTemplate = (subscription: ChannelSubscription) => {
+export const editSubscriptionTemplate = (subscriptionTemplate: SubscriptionTemplate) => {
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());
         try {
             const data = await doFetch(`${baseUrl}/api/v2/subscriptionTemplates`, {
                 method: 'put',
-                body: JSON.stringify(subscription),
+                body: JSON.stringify(subscriptionTemplate),
             });
 
             dispatch({
@@ -300,20 +300,20 @@ export const deleteChannelSubscription = (subscription: ChannelSubscription) => 
     };
 };
 
-export const deleteSubscriptionTemplate = (subscription: ChannelSubscription) => {
+export const deleteSubscriptionTemplate = (subscriptionTemplate: SubscriptionTemplate) => {
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());
         try {
-            await doFetch(`${baseUrl}/api/v2/subscriptionTemplates/${subscription.id}?instance_id=${subscription.instance_id}&project_key=${subscription.filters.projects[0]}`, {
+            await doFetch(`${baseUrl}/api/v2/subscriptionTemplates/${subscriptionTemplate.id}?instance_id=${subscriptionTemplate.instance_id}&project_key=${subscriptionTemplate.filters.projects[0]}`, {
                 method: 'delete',
             });
 
             dispatch({
                 type: ActionTypes.DELETED_SUBSCRIPTION_TEMPLATE,
-                data: subscription,
+                data: subscriptionTemplate,
             });
 
-            return {data: subscription};
+            return {data: subscriptionTemplate};
         } catch (error) {
             return {error};
         }
@@ -349,7 +349,7 @@ export const fetchChannelSubscriptions = (channelId: string) => {
             }
         }
 
-        if (errors.length > 0 && allResponses.length === errors.length) {
+        if (errors.length && allResponses.length === errors.length) {
             return {error: new Error(errors[0])};
         }
 
