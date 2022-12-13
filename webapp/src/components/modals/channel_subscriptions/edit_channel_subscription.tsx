@@ -554,7 +554,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         let confirmDeleteMessage = '';
         confirmDeleteMessage = `Are you sure to delete the subscription template ${(this.props.selectedSubscriptionTemplate && this.props.selectedSubscriptionTemplate.name) ? `"${this.props.selectedSubscriptionTemplate.name}"` : ''}?`;
         if (this.props.selectedSubscription) {
-            confirmDeleteMessage = `Are you sure to delete the subscription ${this.props.selectedSubscription.name ? `"${this.props.selectedSubscription.name}"` : ''}?`;        }
+            confirmDeleteMessage = `Are you sure to delete the subscription ${this.props.selectedSubscription.name ? `"${this.props.selectedSubscription.name}"` : ''}?`;
+        }
 
         let confirmComponent;
         if (this.props.selectedSubscription || this.props.selectedSubscriptionTemplate) {
