@@ -59,7 +59,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
     };
 
     deleteSubscriptionTemplate = (sub: ChannelSubscription): void => {
-        this.props.deleteSubscriptionTemplate(sub).then((res: { error?: { message: string } }) => {
+        this.props.deleteSubscriptionTemplate(sub).then((res: {error?: {message: string}}) => {
             if (res.error) {
                 this.setState({error: res.error.message});
             }
@@ -142,22 +142,16 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                 key={sub.id}
                 className='select-channel-subscriptions-row'
             >
-                <td>
-                    <span>{sub.name || '(no name)'}</span>
-                </td>
-                <td>
-                    <span>{projectName}</span>
-                </td>
+                <td>{sub.name || '(no name)'}</td>
+                <td>{projectName}</td>
                 {showInstanceColumn && (
-                    <td>
-                        <span>{instanceName}</span>
-                    </td>
+                    <td>{instanceName}</td>
                 )}
 
                 <td>
                     <button
                         className='style--none color--link'
-                        onClick={(): void => this.props.showEditSubscriptionTemplate(sub)}
+                        onClick={() => this.props.showEditSubscriptionTemplate(sub)}
                         type='button'
                     >
                         {'Edit'}
@@ -165,7 +159,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                     {' - '}
                     <button
                         className='style--none color--link'
-                        onClick={(): void => this.handleDeleteChannelSubscription(sub, true)}
+                        onClick={() => this.handleDeleteChannelSubscription(sub, true)}
                         type='button'
                     >
                         {'Delete'}
@@ -187,16 +181,9 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         }
 
         let confirmDeleteMessage = '';
-        if (isTemplate) {
-            confirmDeleteMessage = 'Delete Subscription Template?';
-            if (subscriptionToDelete && subscriptionToDelete.name) {
-                confirmDeleteMessage = `Delete Subscription Template "${subscriptionToDelete.name}"?`;
-            }
-        } else {
-            confirmDeleteMessage = 'Delete Subscription?';
-            if (subscriptionToDelete && subscriptionToDelete.name) {
-                confirmDeleteMessage = `Delete Subscription "${subscriptionToDelete.name}"?`;
-            }
+        confirmDeleteMessage = `Are you sure to delete the subscription ${isTemplate ? 'template' : ''}?`;
+        if (subscriptionToDelete && subscriptionToDelete.name) {
+            confirmDeleteMessage = `Are you sure to delete the subscription  ${isTemplate ? 'template' : ''} "${subscriptionToDelete.name}"?`;
         }
 
         let confirmModal = null;
@@ -222,37 +209,38 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         }
 
         const subscriptionTemplateTitle = <h2 className='text-center'>{'Jira Subscription Templates'}</h2>;
-
         const showInstanceColumn = this.props.installedInstances.length > 1;
         let subscriptionRows;
         let subscriptionTemplateRows;
+        const columns = (
+            <thead>
+                <tr>
+                    <th scope='col'>{'Name'}</th>
+                    <th
+                        className='th-col'
+                        scope='col'
+                    >{'Project'}</th>
+                    {showInstanceColumn &&
+                    <th
+                        className='th-col'
+                        scope='col'
+                    >{'Instance'}</th>
+                    }
+                    <th
+                        className='th-col'
+                        scope='col'
+                    >{'Actions'}</th>
+                </tr>
+            </thead>
+        );
         if (channelSubscriptions.length) {
             subscriptionRows = (
                 <table className='table'>
-
-                    <thead>
-                        <tr>
-                            <th scope='col'>{'Name'}</th>
-                            <th
-                                className='th-col'
-                                scope='col'
-                            >{'Project'}</th>
-                            {showInstanceColumn &&
-                                <th
-                                    className='th-col'
-                                    scope='col'
-                                >{'Instance'}</th>
-                            }
-                            <th
-                                className='th-col'
-                                scope='col'
-                            >{'Actions'}</th>
-                        </tr>
-                    </thead>
+                    {columns}
                     <tbody>
-                        {channelSubscriptions.map((element) => {
-                            return this.renderRow(element, false);
-                        })}
+                        {channelSubscriptions.map((element) => (
+                            this.renderRow(element, false)
+                        ))}
                     </tbody>
                 </table>
             );
@@ -267,37 +255,17 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         if (subscriptionTemplates.length) {
             subscriptionTemplateRows = (
                 <table className='table'>
-                    <thead>
-                        <tr>
-                            <th scope='col'>{'Name'}</th>
-                            <th
-                                className='th-col'
-                                scope='col'
-                            >{'Project'}</th>
-                            {showInstanceColumn &&
-                                <th
-                                    className='th-col'
-                                    scope='col'
-                                >{'Instance'}</th>
-                            }
-                            <th
-                                className='th-col'
-                                scope='col'
-                            >{'Actions'}</th>
-                        </tr>
-                    </thead>
+                    {columns}
                     <tbody>
-                        {subscriptionTemplates.map((element) => {
-                            return this.renderRow(element, true);
-                        })}
+                        {subscriptionTemplates.map((element) => (
+                            this.renderRow(element, true)
+                        ))}
                     </tbody>
                 </table>
             );
         } else {
             subscriptionTemplateRows = (
-                <p>
-                    {'Click "Create Template" to create subscription templates.'}
-                </p>
+                <p>{'Click "Create Template" to create subscription templates.'}</p>
             );
         }
 
@@ -314,7 +282,6 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                     </button>
                 </div>
                 {subscriptionRows}
-
                 <div className='d-flex justify-content-between align-items-center margin-bottom x3'>
                     {subscriptionTemplateTitle}
                     <button

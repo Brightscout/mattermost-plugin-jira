@@ -139,14 +139,14 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
     componentDidMount() {
         if (this.props.selectedSubscription) {
             const projects = this.props.selectedSubscription.filters.projects;
-            if (projects.length > 0) {
+            if (projects.length) {
                 this.fetchSubscriptionTemplateForProjectKey(this.state.instanceID, projects[0]);
             }
         }
 
         if (this.props.selectedSubscriptionTemplate) {
             const projects = this.props.selectedSubscriptionTemplate.filters.projects;
-            if (projects.length > 0) {
+            if (projects.length) {
                 this.fetchSubscriptionTemplateForProjectKey(this.state.instanceID, projects[0]);
             }
         }
@@ -173,6 +173,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 }
             });
         }
+
         if (this.props.selectedSubscriptionTemplate) {
             this.props.deleteSubscriptionTemplate(this.props.selectedSubscriptionTemplate).then((res) => {
                 if (res.error) {
@@ -280,7 +281,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             }
 
             const subscriptionTemplate = subs.data as ChannelSubscription[];
-
             let templateOptions: ReactSelectOption[] | null = null;
             if (subscriptionTemplate) {
                 templateOptions = subscriptionTemplate.map((template: ChannelSubscription) => (
@@ -383,6 +383,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                     this.setState({error: edited.error.message, submittingTemplate: false});
                     return;
                 }
+
                 this.handleClose(e);
             });
         } else if (this.props.creatingSubscriptionTemplate) {
@@ -392,6 +393,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                     this.setState({error: created.error.message, submittingTemplate: false});
                     return;
                 }
+
                 this.handleClose(e);
             });
         } else if (this.props.selectedSubscription) {
@@ -416,12 +418,12 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         }
     };
 
-    handleTemplateChange =(_: any, templateID: string) => {
-        const templateChoosen = this.props.subscriptionTemplates.find((template) => template.id === templateID);
+    handleTemplateChange =(_: any, templateId: string) => {
+        const templateChoosen = this.props.subscriptionTemplates.find((template) => template.id === templateId);
         this.handleProjectChange(templateChoosen.filters.projects[0]);
         this.setState({
             filters: templateChoosen.filters,
-            selectedTemplateID: templateID,
+            selectedTemplateID: templateId,
         });
     }
 
@@ -454,19 +456,18 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 innerComponent = (
                     <React.Fragment>
                         <ReactSelectSetting
-                            name={'template'}
-                            label={'Use Template'}
+                            name='template'
+                            label='Use Template'
                             options={this.state.templateOptions}
                             onChange={this.handleTemplateChange}
-                            value={this.state.templateOptions == null ? null : this.state.templateOptions.find((option) => option.value === this.state.selectedTemplateID)}
-                            isDisabled={false}
+                            value={this.state.templateOptions && this.state.templateOptions.find((option) => option.value === this.state.selectedTemplateID)}
                             required={false}
                             theme={this.props.theme}
                             isLoading={false}
                         />
                         <ReactSelectSetting
-                            name={'events'}
-                            label={'Events'}
+                            name='events'
+                            label='Events'
                             required={true}
                             onChange={this.handleSettingChange}
                             options={eventOptions}
@@ -477,8 +478,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                             removeValidate={this.validator.removeComponent}
                         />
                         <ReactSelectSetting
-                            name={'issue_types'}
-                            label={'Issue Type'}
+                            name='issue_types'
+                            label='Issue Type'
                             required={true}
                             onChange={this.handleIssueChange}
                             options={issueOptions}
@@ -516,8 +517,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 <React.Fragment>
                     <div className='container-fluid'>
                         <Input
-                            label={'Subscription Name'}
-                            placeholder={'Name'}
+                            label='Subscription Name'
+                            placeholder='Name'
                             type={'input'}
                             maxLength={100}
                             required={true}
@@ -551,24 +552,18 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         const {showConfirmModal} = this.state;
 
         let confirmDeleteMessage = '';
-        if (this.props.selectedSubscriptionTemplate) {
-            confirmDeleteMessage = 'Delete Subscription Template?';
-            if (this.props.selectedSubscriptionTemplate.name) {
-                confirmDeleteMessage = `Delete Subscription Template "${this.props.selectedSubscriptionTemplate.name}"?`;
-            }
-        } else {
-            confirmDeleteMessage = 'Delete Subscription?';
-            if (this.props.selectedSubscription && this.props.selectedSubscription.name) {
-                confirmDeleteMessage = `Delete Subscription "${this.props.selectedSubscription.name}"?`;
-            }
+        confirmDeleteMessage = `Are you sure to delete the subscription template ${(this.props.selectedSubscriptionTemplate && this.props.selectedSubscriptionTemplate.name) ? `"${this.props.selectedSubscriptionTemplate.name}"?` : '?'}`;
+
+        if (this.props.selectedSubscription) {
+            confirmDeleteMessage = `Are you sure to delete the subscription ${this.props.selectedSubscription.name ? `"${this.props.selectedSubscription.name}?"` : '?'}`;
         }
 
         let confirmComponent;
         if (this.props.selectedSubscription || this.props.selectedSubscriptionTemplate) {
             confirmComponent = (
                 <ConfirmModal
-                    cancelButtonText={'Cancel'}
-                    confirmButtonText={'Delete'}
+                    cancelButtonText='Cancel'
+                    confirmButtonText='Delete'
                     confirmButtonClass={'btn btn-danger'}
                     hideCancel={false}
                     message={confirmDeleteMessage}
@@ -591,7 +586,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
         const enableSubmitButton = Boolean(this.state.filters.projects[0]);
         const enableDeleteButton = Boolean(this.props.selectedSubscription || this.props.selectedSubscriptionTemplate);
-
         let saveSubscriptionButtonText = '';
         let headerText = '';
         if (this.props.selectedSubscription || this.props.creatingSubscription) {
@@ -631,7 +625,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         disabled={!enableDeleteButton}
                         onClick={this.handleDeleteChannelSubscription}
                     />
-
                     <FormButton
                         type='button'
                         btnClass='btn-link'
