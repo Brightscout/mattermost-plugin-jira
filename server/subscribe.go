@@ -481,7 +481,7 @@ func (p *Plugin) validateSubscriptionTemplate(subscriptionTemplate *Subscription
 	}
 
 	for _, template := range templates.Templates.ByProjectID[projectKey] {
-		if template.Name == subscriptionTemplate.Name {
+		if template.Name == subscriptionTemplate.Name && template.ID != subscriptionTemplate.ID {
 			return errors.Errorf("Subscription name, '%s', already exists. Please choose another name.", subscriptionTemplate.Name)
 		}
 	}
