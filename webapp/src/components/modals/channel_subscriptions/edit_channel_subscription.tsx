@@ -552,16 +552,10 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         const {showConfirmModal} = this.state;
 
         let confirmDeleteMessage = '';
-        if (this.props.selectedSubscriptionTemplate) {
-            confirmDeleteMessage = 'Are you sure to delete the subscription template?';
-            if (this.props.selectedSubscriptionTemplate.name) {
-                confirmDeleteMessage = `Are you sure to delete the subscription template "${this.props.selectedSubscriptionTemplate.name}"?`;
-            }
-        } else {
-            confirmDeleteMessage = 'Are you sure to delete the subscription?';
-            if (this.props.selectedSubscription && this.props.selectedSubscription.name) {
-                confirmDeleteMessage = `Are you sure to delete the subscription "${this.props.selectedSubscription.name}"?`;
-            }
+        confirmDeleteMessage = `Are you sure to delete the subscription template ${(this.props.selectedSubscriptionTemplate && this.props.selectedSubscriptionTemplate.name) ? `"${this.props.selectedSubscriptionTemplate.name}"?` : '?'}`;
+
+        if (this.props.selectedSubscription) {
+            confirmDeleteMessage = `Are you sure to delete the subscription ${this.props.selectedSubscription.name ? `"${this.props.selectedSubscription.name}?"` : '?'}`;
         }
 
         let confirmComponent;
