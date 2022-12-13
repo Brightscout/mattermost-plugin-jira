@@ -1172,7 +1172,7 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 		return respondErr(w, http.StatusInternalServerError, errors.Wrap(err, "unable to remove channel subscription template"))
 	}
 
-	code, err := respondJSON(w, map[string]interface{}{"status": "OK"})
+	code, err := respondJSON(w, map[string]interface{}{model.STATUS: model.StatusOk})
 	if err != nil {
 		return code, err
 	}
