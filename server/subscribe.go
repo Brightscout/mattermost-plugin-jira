@@ -281,13 +281,13 @@ func (p *Plugin) getSubscriptionTemplatesForInstance(instanceID types.ID) (*Temp
 	return subs, nil
 }
 
-func (p *Plugin) getSubscriptionTemplatesByID(instanceID types.ID, templateID string) (*SubscriptionTemplate, error) {
+func (p *Plugin) getSubscriptionTemplatesByID(instanceID, templateID types.ID) (*SubscriptionTemplate, error) {
 	subs, err := p.getTemplates(instanceID)
 	if err != nil {
 		return nil, err
 	}
 
-	sub := subs.Templates.ByID[templateID]
+	sub := subs.Templates.ByID[string(templateID)]
 	return &sub, nil
 }
 
@@ -1274,7 +1274,7 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 			errors.New("missing project key"))
 	}
 
-	subscriptionTemplate, err := p.getSubscriptionTemplatesByID(instanceID, subscriptionTemplateID)
+	subscriptionTemplate, err := p.getSubscriptionTemplatesByID(instanceID, types.ID(subscriptionTemplateID))
 	if err != nil {
 		respondErr(w, http.StatusInternalServerError, errors.Wrap(err, "unable to find the subscription template"))
 	}
