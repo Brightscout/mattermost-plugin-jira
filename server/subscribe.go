@@ -35,7 +35,7 @@ const (
 	MaxSubscriptionTemplateNameLength = 100
 
 	QueryParamInstanceID = "instance_id"
-	QueryParamProjectID  = "project_key"
+	QueryParamProjectKey = "project_key"
 
 	HeaderMattermostUserID = "Mattermost-User-Id"
 )
@@ -62,10 +62,10 @@ type ChannelSubscription struct {
 }
 
 type SubscriptionTemplate struct {
-	ID         string              `json:"id"`
-	Filters    SubscriptionFilters `json:"filters"`
-	Name       string              `json:"name"`
-	InstanceID types.ID            `json:"instance_id"`
+	ID         string               `json:"id"`
+	Filters    *SubscriptionFilters `json:"filters"`
+	Name       string               `json:"name"`
+	InstanceID types.ID             `json:"instance_id"`
 }
 
 type ChannelSubscriptions struct {
@@ -105,7 +105,7 @@ type Subscriptions struct {
 	Channel       *ChannelSubscriptions
 }
 
-type ListSubscriptionTemplate map[string]SubscriptionTemplate
+type ListSubscriptionTemplate map[string]*SubscriptionTemplate
 
 type SubscriptionTemplates struct {
 	ByProjectID map[string]ListSubscriptionTemplate `json:"by_project_id"`
@@ -167,6 +167,7 @@ func SubscriptionTemplatesFromJSON(bytes []byte) (*Templates, error) {
 	} else {
 		subs = NewTemplates()
 	}
+
 	return subs, nil
 }
 
@@ -351,7 +352,7 @@ func (t *SubscriptionTemplates) add(newSubscriptionTemplate *SubscriptionTemplat
 		t.ByProjectID[projectKey] = make(ListSubscriptionTemplate)
 	}
 
-	t.ByProjectID[projectKey][newSubscriptionTemplate.ID] = *newSubscriptionTemplate
+	t.ByProjectID[projectKey][newSubscriptionTemplate.ID] = newSubscriptionTemplate
 }
 
 func (p *Plugin) addSubscriptionTemplate(instanceID types.ID, newSubscriptionTemplate *SubscriptionTemplate, client Client) error {
@@ -402,24 +403,24 @@ func (p *Plugin) removeSubscriptionTemplate(instanceID types.ID, subscriptionTem
 	})
 }
 
-func (p *Plugin) validateSubscriptionTemplate(subscription *SubscriptionTemplate, instanceID types.ID, client Client, projectKey string) error {
-	if len(subscription.Name) == 0 {
+func (p *Plugin) validateSubscriptionTemplate(subscriptionTemplate *SubscriptionTemplate, instanceID types.ID, client Client, projectKey string) error {
+	if len(subscriptionTemplate.Name) == 0 {
 		return errors.New("please provide a name for the subscription")
 	}
 
-	if len(subscription.Name) >= MaxSubscriptionTemplateNameLength {
+	if len(subscriptionTemplate.Name) >= MaxSubscriptionTemplateNameLength {
 		return errors.Errorf("please provide a name less than %d characters", MaxSubscriptionTemplateNameLength)
 	}
 
-	if len(subscription.Filters.Events) == 0 {
+	if len(subscriptionTemplate.Filters.Events) == 0 {
 		return errors.New("please provide at least one event type")
 	}
 
-	if len(subscription.Filters.IssueTypes) == 0 {
+	if len(subscriptionTemplate.Filters.IssueTypes) == 0 {
 		return errors.New("please provide at least one issue type")
 	}
 
-	if (len(subscription.Filters.Projects)) == 0 {
+	if (len(subscriptionTemplate.Filters.Projects)) == 0 {
 		return errors.New("please provide a project identifier")
 	}
 
@@ -432,9 +433,9 @@ func (p *Plugin) validateSubscriptionTemplate(subscription *SubscriptionTemplate
 		return err
 	}
 
-	for _, subscriptionTemplate := range templates.Templates.ByProjectID[projectKey] {
-		if subscriptionTemplate.Name == subscription.Name {
-			return errors.Errorf("Subscription name, '%s', already exists. Please choose another name.", subscription.Name)
+	for _, template := range templates.Templates.ByProjectID[projectKey] {
+		if template.Name == subscriptionTemplate.Name {
+			return errors.Errorf("Subscription name, '%s', already exists. Please choose another name.", subscriptionTemplate.Name)
 		}
 	}
 
@@ -1099,14 +1100,13 @@ func (p *Plugin) httpChannelGetSubscriptions(w http.ResponseWriter, r *http.Requ
 
 func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
 	instanceID := types.ID(r.FormValue(QueryParamInstanceID))
-
 	if len(instanceID) < 2 {
 		return respondErr(w, http.StatusBadRequest, errors.New("bad or missing instance id"))
 	}
 
 	subscriptionTemplates, err := p.getSubscriptionTemplatesForInstance(instanceID)
 	if err != nil {
-		return respondErr(w, http.StatusInternalServerError, errors.Wrap(err, "unable to get channel subscription templates"))
+		return respondErr(w, http.StatusInternalServerError, errors.Wrap(err, "unable to get subscription templates"))
 	}
 
 	client, _, _, err := p.getClient(instanceID, types.ID(mattermostUserID))
@@ -1119,7 +1119,7 @@ func (p *Plugin) httpGetSubscriptionTemplates(w http.ResponseWriter, r *http.Req
 		return respondErr(w, http.StatusInternalServerError, err)
 	}
 
-	var subTemplates []SubscriptionTemplate
+	var subTemplates []*SubscriptionTemplate
 	for _, project := range plist {
 		listSubscriptionTemplate := subscriptionTemplates.Templates.ByProjectID[project.Key]
 		for _, subTemplate := range listSubscriptionTemplate {
@@ -1149,7 +1149,7 @@ func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.R
 		return code, err
 	}
 
-	return http.StatusOK, nil
+	return http.StatusCreated, nil
 }
 
 func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.Request, mattermostUserID string) (int, error) {
@@ -1163,7 +1163,7 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 		return respondErr(w, http.StatusBadRequest, errors.New("bad or missing instance id"))
 	}
 
-	projectKey := r.FormValue(QueryParamProjectID)
+	projectKey := r.FormValue(QueryParamProjectKey)
 	if projectKey == "" {
 		return respondErr(w, http.StatusBadRequest, errors.New("missing project key"))
 	}
