@@ -1251,7 +1251,7 @@ func TestCreateSubscriptionTemplate(t *testing.T) {
 			expectedStatusCode:   http.StatusInternalServerError,
 			apiCalls:             hasSubscriptionTemplates([]SubscriptionTemplate{}, t),
 		},
-		"Adding to existing templates with other channel": {
+		"Adding to existing templates in a different channel": {
 			subscriptionTemplate: `{"instance_id": "jiraurl1", "name": "some name", "channel_id": "mockChannelID_____________", "filters": {"events": ["jira:issue_created"], "projects": ["myproject"], "issue_types": ["10001"]}}`,
 			expectedStatusCode:   http.StatusOK,
 			apiCalls: checkHasSubscriptionTemplates([]SubscriptionTemplate{
@@ -1270,7 +1270,7 @@ func TestCreateSubscriptionTemplate(t *testing.T) {
 						},
 					}), t),
 		},
-		"Adding to existing templates the in the same channel": {
+		"Adding to existing templates in the same channel": {
 			subscriptionTemplate: `{"instance_id": "jiraurl1", "name": "subscription name", "channel_id": "mockChannelID_____________", "filters": {"events": ["jira:issue_created"], "projects": ["myproject"], "issue_types": ["10001"]}}`,
 			expectedStatusCode:   http.StatusOK,
 			apiCalls: checkHasSubscriptionTemplates([]SubscriptionTemplate{
