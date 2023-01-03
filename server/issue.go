@@ -1141,13 +1141,11 @@ func (s *ConnectionSettings) ShouldReceiveNotification(role string) bool {
 }
 
 func (p *Plugin) fetchConnectedUserFromAccount(account map[string]string, instance Instance) (Client, *Connection, error) {
-	var mattermostUserID types.ID
-	var err error
+	accountKey := account["Name"]
 	if account["AccountID"] != "" {
-		mattermostUserID, err = p.userStore.LoadMattermostUserID(instance.GetID(), account["AccountID"])
-	} else {
-		mattermostUserID, err = p.userStore.LoadMattermostUserID(instance.GetID(), account["Name"])
+		accountKey = account["AccountID"]
 	}
+	mattermostUserID, err := p.userStore.LoadMattermostUserID(instance.GetID(), accountKey)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1165,28 +1163,26 @@ func (p *Plugin) fetchConnectedUserFromAccount(account map[string]string, instan
 	return client, connection, nil
 }
 
+func appendAccountInformation(accountID, name string, accountInformation *[]map[string]string) {
+	*accountInformation = append(*accountInformation, map[string]string{
+		"AccountID": accountID,
+		"Name":      name,
+	})
+}
+
 func (wh *webhook) fetchConnectedUser(p *Plugin, instanceID types.ID) (Client, *Connection, error) {
 	var accountInformation []map[string]string
 
 	if wh.Issue.Fields != nil && wh.Issue.Fields.Creator != nil {
-		accountInformation = append(accountInformation, map[string]string{
-			"AccountID": wh.Issue.Fields.Creator.AccountID,
-			"Name":      wh.Issue.Fields.Creator.Name,
-		})
+		appendAccountInformation(wh.Issue.Fields.Creator.AccountID, wh.Issue.Fields.Creator.Name, &accountInformation)
 	}
 
 	if wh.Issue.Fields != nil && wh.Issue.Fields.Assignee != nil {
-		accountInformation = append(accountInformation, map[string]string{
-			"AccountID": wh.Issue.Fields.Assignee.AccountID,
-			"Name":      wh.Issue.Fields.Assignee.Name,
-		})
+		appendAccountInformation(wh.Issue.Fields.Assignee.AccountID, wh.Issue.Fields.Assignee.Name, &accountInformation)
 	}
 
 	if wh.Issue.Fields != nil && wh.Issue.Fields.Reporter != nil {
-		accountInformation = append(accountInformation, map[string]string{
-			"AccountID": wh.Issue.Fields.Reporter.AccountID,
-			"Name":      wh.Issue.Fields.Reporter.Name,
-		})
+		appendAccountInformation(wh.Issue.Fields.Reporter.AccountID, wh.Issue.Fields.Reporter.Name, &accountInformation)
 	}
 
 	instance, err := p.instanceStore.LoadInstance(instanceID)

@@ -15,10 +15,12 @@ const (
 	errStoreNewSettings = "Could not store new settings. Please contact your system administrator. Error: %v"
 	errConnectToJira    = "Your account is not connected to Jira. Please type `/jira connect`. %v"
 
-	assigneeRole = "assignee"
-	mentionRole  = "mention"
-	reporterRole = "reporter"
-	watchingRole = "watching"
+	assigneeRole    = "assignee"
+	mentionRole     = "mention"
+	reporterRole    = "reporter"
+	watchingRole    = "watching"
+	roleStatusIndex = 2
+	roleIndex       = 1
 )
 
 func (connection *Connection) updateRolesForDMNotification(role string, hasNotification bool) bool {
@@ -39,7 +41,7 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 	}
 
 	var value bool
-	switch args[2] {
+	switch args[roleStatusIndex] {
 	case settingOn:
 		value = true
 	case settingOff:
@@ -51,7 +53,7 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 	if connection.Settings == nil {
 		connection.Settings = &ConnectionSettings{}
 	}
-	if !connection.updateRolesForDMNotification(args[1], value) {
+	if !connection.updateRolesForDMNotification(args[roleIndex], value) {
 		return p.responsef(header, helpText)
 	}
 
@@ -66,9 +68,9 @@ func (p *Plugin) settingsNotifications(header *model.CommandArgs, instanceID, ma
 		return p.responsef(header, errConnectToJira, err)
 	}
 	notifications := settingOff
-	if updatedConnection.Settings.RolesForDMNotification[args[1]] {
+	if updatedConnection.Settings.RolesForDMNotification[args[roleIndex]] {
 		notifications = settingOn
 	}
 
-	return p.responsef(header, "Settings updated.\n\t%s notifications %s.", cases.Title(language.Und, cases.NoLower).String(args[1]), notifications)
+	return p.responsef(header, "Settings updated.\n\t%s notifications %s.", cases.Title(language.Und, cases.NoLower).String(args[roleIndex]), notifications)
 }
