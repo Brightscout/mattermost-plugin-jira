@@ -31,6 +31,8 @@ const (
 	createdCommentEvent      = "event_created_comment"
 	notificationTypeReporter = "reporter"
 	notificationTypeWatching = "watching"
+	jiraUserName             = "Name"
+	jiraUserAccountID        = "AccountID"
 )
 
 func makePost(userID, channelID, message string) *model.Post {
@@ -1141,9 +1143,9 @@ func (s *ConnectionSettings) ShouldReceiveNotification(role string) bool {
 }
 
 func (p *Plugin) fetchConnectedUserFromAccount(account map[string]string, instance Instance) (Client, *Connection, error) {
-	accountKey := account["Name"]
-	if account["AccountID"] != "" {
-		accountKey = account["AccountID"]
+	accountKey := account[jiraUserName]
+	if account[jiraUserAccountID] != "" {
+		accountKey = account[jiraUserAccountID]
 	}
 	mattermostUserID, err := p.userStore.LoadMattermostUserID(instance.GetID(), accountKey)
 	if err != nil {
@@ -1165,8 +1167,8 @@ func (p *Plugin) fetchConnectedUserFromAccount(account map[string]string, instan
 
 func appendAccountInformation(accountID, name string, accountInformation *[]map[string]string) {
 	*accountInformation = append(*accountInformation, map[string]string{
-		"AccountID": accountID,
-		"Name":      name,
+		jiraUserAccountID: accountID,
+		jiraUserName:      name,
 	})
 }
 
