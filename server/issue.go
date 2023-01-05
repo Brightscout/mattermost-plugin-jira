@@ -1175,16 +1175,16 @@ func appendAccountInformation(accountID, name string, accountInformation *[]map[
 func (wh *webhook) fetchConnectedUser(p *Plugin, instanceID types.ID) (Client, *Connection, error) {
 	var accountInformation []map[string]string
 
-	if wh.Issue.Fields != nil && wh.Issue.Fields.Creator != nil {
-		appendAccountInformation(wh.Issue.Fields.Creator.AccountID, wh.Issue.Fields.Creator.Name, &accountInformation)
-	}
-
-	if wh.Issue.Fields != nil && wh.Issue.Fields.Assignee != nil {
-		appendAccountInformation(wh.Issue.Fields.Assignee.AccountID, wh.Issue.Fields.Assignee.Name, &accountInformation)
-	}
-
-	if wh.Issue.Fields != nil && wh.Issue.Fields.Reporter != nil {
-		appendAccountInformation(wh.Issue.Fields.Reporter.AccountID, wh.Issue.Fields.Reporter.Name, &accountInformation)
+	if wh.Issue.Fields != nil {
+		if wh.Issue.Fields.Creator != nil {
+			appendAccountInformation(wh.Issue.Fields.Creator.AccountID, wh.Issue.Fields.Creator.Name, &accountInformation)
+		}
+		if wh.Issue.Fields.Assignee != nil {
+			appendAccountInformation(wh.Issue.Fields.Assignee.AccountID, wh.Issue.Fields.Assignee.Name, &accountInformation)
+		}
+		if wh.Issue.Fields.Reporter != nil {
+			appendAccountInformation(wh.Issue.Fields.Reporter.AccountID, wh.Issue.Fields.Reporter.Name, &accountInformation)
+		}
 	}
 
 	instance, err := p.instanceStore.LoadInstance(instanceID)
