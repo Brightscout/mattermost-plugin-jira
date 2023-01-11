@@ -37,6 +37,7 @@ check-style: webapp/.npminstall golangci-lint
 
 ifneq ($(HAS_WEBAPP),)
 	cd webapp && npm run lint
+	cd webapp && tsc --noEmit
 endif
 
 ## Run golangci-lint on codebase.
