@@ -54,6 +54,19 @@ If you’d like to see support for additional events, [let us know](https://matt
 
 ![This is the Channel Subscription modal](../.gitbook/assets/channel-subscriptions-modal.png)
 
+## How to create and use the subscription modal?
+
+1. Type the `/jira subscribe` command to create the subscription in the particular channel.
+2. Click on the **Create Subscription** button to receive the Jira issue notifications.
+3. Write the name of a subscription in the **Subscription Name** field.
+4. Select the project name to which you want to subscribe.
+5. Select the events and issue type for which you want to receive the notification in the mattermost.
+6. To be more specific you can add filters as well.You can include or exclude the particular filter by mentioning its type or name. For now, we have 3 types of filters :
+   * Epic Link
+   * Labels
+   * Priority
+7. Click on the **Add Subscription** button to add the subscription to that channel with the specific constraints that you have selected above.
+
 ## Setting up the webhook in Jira
 
 In order to have Jira post events to your Mattermost instance, you'll need to set up a webhook inside of Jira. Please see the instructions at [configure webhooks on the Jira server](https://mattermost.gitbook.io/plugin-jira/setting-up/configuration#step-2-configure-webhooks-on-the-jira-server).
