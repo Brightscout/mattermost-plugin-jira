@@ -2,7 +2,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ master, ci-test ]
+    branches: [ master ]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ master ]
@@ -32,9 +32,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
-        languages: ${{ matrix.language }}
-        debug: false
-        config-file: ./.github/codeql/codeql-config.yml              
+        languages: ${{ matrix.language }}              
     
     # Autobuild attempts to build any compiled languages
     - name: Autobuild
