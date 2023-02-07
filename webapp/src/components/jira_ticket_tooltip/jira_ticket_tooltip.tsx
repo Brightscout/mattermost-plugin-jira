@@ -60,15 +60,13 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
             }
 
             try {
-                if (this.props.href.includes(instanceID)) {
-                    const regex = /https:\/\/.*\/.*\?.*selectedIssue=([\w-]+)&?.*|https:\/\/.*\/browse\/([\w-]+)?.*/;
-                    const result = regex.exec(this.props.href);
-                    if (result) {
-                        ticketID = result[1] || result[2];
-                    }
-
-                    break;
+                const regex = /https:\/\/.*\/.*\?.*selectedIssue=([\w-]+)&?.*|https:\/\/.*\/browse\/([\w-]+)?.*/;
+                const result = regex.exec(this.props.href);
+                if (result) {
+                    ticketID = result[1] || result[2];
                 }
+
+                break;
             } catch {
                 ticketID = '';
             }
@@ -84,7 +82,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
         }
     }
 
-    isUserConnected() {
+    isUserConnectedAndStateNotLoaded() {
         const {connected} = this.props;
         const {isLoaded} = this.state;
 
@@ -94,9 +92,9 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
     componentDidMount() {
         const {ticketDetails} = this.props;
         const {ticketId} = this.state;
-        if (this.isUserConnected() && ((ticketDetails && ticketDetails.ticketId) !== ticketId)) {
+        if (this.isUserConnectedAndStateNotLoaded() && ((ticketDetails && ticketDetails.ticketId) !== ticketId)) {
             this.init();
-        } else if (this.isUserConnected() && ticketDetails && ticketDetails.ticketId === ticketId) {
+        } else if (this.isUserConnectedAndStateNotLoaded() && ticketDetails && ticketDetails.ticketId === ticketId) {
             this.setTicket(this.props);
         }
     }
@@ -171,11 +169,11 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
     }
 
     render() {
-        if (!this.state.isLoaded) {
-            return (<p/>);
-        }
+        const {ticketDetails, isLoaded} = this.state;
 
-        const {ticketDetails} = this.state;
+        if (!isLoaded || !ticketDetails) {
+            return <p/>;
+        }
 
         return (
             <div className='jira-issue-tooltip'>
@@ -188,7 +186,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                             rel='noopener noreferrer'
                         >
                             <img
-                                src={ticketDetails && ticketDetails.jiraIcon}
+                                src={ticketDetails.jiraIcon}
                                 width={14}
                                 height={14}
                                 alt='jira-avatar'
@@ -201,12 +199,12 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                             target='_blank'
                             rel='noopener noreferrer'
                         >
-                            <span className='jira-ticket-key'>{ticketDetails && ticketDetails.ticketId}</span>
+                            <span className='jira-ticket-key'>{ticketDetails.ticketId}</span>
                             <img
                                 alt='jira-issue-icon'
                                 width='14'
                                 height='14'
-                                src={ticketDetails && ticketDetails.issueIcon}
+                                src={ticketDetails.issueIcon}
                             />
                         </a>
                     </div>
@@ -218,20 +216,20 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                             target='_blank'
                             rel='noopener noreferrer'
                         >
-                            <h5>{ticketDetails && ticketDetails.summary.substring(0, jiraTicketTitleMaxLength)}</h5>
+                            <h5>{ticketDetails.summary.substring(0, jiraTicketTitleMaxLength)}</h5>
                         </a>
-                        {ticketDetails && this.tagTicketStatus(ticketDetails.statusKey)}
+                        {this.tagTicketStatus(ticketDetails.statusKey)}
                     </div>
                     <div className='popover-body__description'>
-                        {ticketDetails && ticketDetails.description}
+                        {ticketDetails.description}
                     </div>
                     <div className='popover-body__labels'>
-                        {ticketDetails && this.fixVersionLabel(ticketDetails.versions)}
-                        {ticketDetails && this.renderLabelList(ticketDetails.labels)}
+                        {this.fixVersionLabel(ticketDetails.versions)}
+                        {this.renderLabelList(ticketDetails.labels)}
                     </div>
                 </div>
                 <div className='popover-footer'>
-                    {ticketDetails && ticketDetails.assigneeAvatar ? (
+                    {ticketDetails.assigneeAvatar ? (
                         <img
                             className='popover-footer__assignee-profile'
                             src={ticketDetails.assigneeAvatar}
@@ -239,7 +237,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                         />
                     ) : <DefaultAvatar/>
                     }
-                    {ticketDetails && ticketDetails.assigneeName ? (
+                    {ticketDetails.assigneeName ? (
                         <span>
                             <span className='popover-footer__assignee-name'>
                                 {ticketDetails.assigneeName}
