@@ -177,7 +177,7 @@ func (p *Plugin) UninstallInstance(instanceID types.ID, instanceType InstanceTyp
 				if strings.Contains(err.Error(), "not found") {
 					instances.Delete(instanceID)
 					updated = instances
-					if err := p.instanceStore.StoreInstances(instances); err != nil {
+					if err = p.instanceStore.StoreInstances(instances); err != nil {
 						return err
 					}
 				}
