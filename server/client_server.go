@@ -175,7 +175,7 @@ func (client jiraServerClient) GetUserGroups(connection *Connection) ([]*jira.Us
 }
 
 func (client jiraServerClient) ListProjects(query string, limit int) (jira.ProjectList, error) {
-	plist, resp, err := client.Jira.Project.GetList()
+	plist, resp, err := client.Jira.Project.ListWithOptions(&jira.GetQueryOptions{})
 	if err != nil {
 		return nil, userFriendlyJiraError(resp, err)
 	}
@@ -187,4 +187,21 @@ func (client jiraServerClient) ListProjects(query string, limit int) (jira.Proje
 		result = result[:limit]
 	}
 	return result, nil
+}
+
+func (client jiraServerClient) GetIssueTypes(projectID string) ([]*jira.IssueType, error) {
+	type searchResult struct {
+		IssueTypes []*jira.IssueType `json:"issueTypes"`
+	}
+
+	var result searchResult
+	opts := map[string]string{
+		"expand": "issueTypes",
+	}
+
+	if err := client.RESTGet(fmt.Sprintf("2/project/%s", projectID), opts, &result); err != nil {
+		return result.IssueTypes, err
+	}
+
+	return result.IssueTypes, nil
 }
