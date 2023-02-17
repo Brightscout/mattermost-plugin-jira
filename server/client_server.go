@@ -22,6 +22,10 @@ type jiraServerClient struct {
 	JiraClient
 }
 
+type searchResult struct {
+	IssueTypes []*jira.IssueType `json:"issueTypes"`
+}
+
 func newServerClient(jiraClient *jira.Client) Client {
 	return &jiraServerClient{
 		JiraClient: JiraClient{
@@ -190,10 +194,6 @@ func (client jiraServerClient) ListProjects(query string, limit int) (jira.Proje
 }
 
 func (client jiraServerClient) GetIssueTypes(projectID string) ([]*jira.IssueType, error) {
-	type searchResult struct {
-		IssueTypes []*jira.IssueType `json:"issueTypes"`
-	}
-
 	var result searchResult
 	opts := map[string]string{
 		"expand": "issueTypes",

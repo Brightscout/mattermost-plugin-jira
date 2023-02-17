@@ -523,7 +523,7 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	for _, prj := range plist {
 		issueTypeList, err := p.GetIssueTypes(types.ID(instanceID), types.ID(mattermostUserID), prj.ID)
 		if err != nil {
-			p.API.LogError("Failed to Get issue types for project.", "ProjectKey", prj.Key, "Error", err)
+			p.API.LogError("Failed to get issue types for project.", "ProjectKey", prj.Key, "Error", err.Error())
 			continue
 		}
 
