@@ -121,7 +121,7 @@ func (client jiraCloudClient) GetIssueTypes(projectID string) ([]*jira.IssueType
 	}
 
 	if err := client.RESTGet("3/issuetype/project", opts, &result); err != nil {
-		return result, err
+		return nil, err
 	}
 
 	return result, nil

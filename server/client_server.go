@@ -175,14 +175,14 @@ func (client jiraServerClient) GetUserGroups(connection *Connection) ([]*jira.Us
 }
 
 func (client jiraServerClient) ListProjects(query string, limit int) (jira.ProjectList, error) {
-	plist, resp, err := client.Jira.Project.ListWithOptions(&jira.GetQueryOptions{})
+	pList, resp, err := client.Jira.Project.ListWithOptions(&jira.GetQueryOptions{})
 	if err != nil {
 		return nil, userFriendlyJiraError(resp, err)
 	}
-	if plist == nil {
+	if pList == nil {
 		return jira.ProjectList{}, nil
 	}
-	result := *plist
+	result := *pList
 	if limit > 0 && len(result) > limit {
 		result = result[:limit]
 	}
@@ -200,7 +200,7 @@ func (client jiraServerClient) GetIssueTypes(projectID string) ([]*jira.IssueTyp
 	}
 
 	if err := client.RESTGet(fmt.Sprintf("2/project/%s", projectID), opts, &result); err != nil {
-		return result.IssueTypes, err
+		return nil, err
 	}
 
 	return result.IssueTypes, nil
