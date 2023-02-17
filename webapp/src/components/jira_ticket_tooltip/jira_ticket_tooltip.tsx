@@ -80,7 +80,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
         return null;
     }
 
-    isUserConnected() {
+    isUserConnectedAndStateNotLoaded() {
         const {connected} = this.props;
         const {isLoaded} = this.state;
 
@@ -93,7 +93,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
         }
         const {ticketDetails} = this.props;
         const {ticketId} = this.state;
-        if (this.isUserConnected() && ticketDetails && ticketDetails.ticketId === ticketId) {
+        if (this.isUserConnectedAndStateNotLoaded() && ticketDetails && ticketDetails.ticketId === ticketId) {
             this.setTicket(this.props);
         }
     }

@@ -1,10 +1,12 @@
-.default-avatar {
-    background-color: #708090;
-    border-radius: 50%;
-    margin-right: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 22px;
-    height: 22px;
+.jira-issue-tooltip{
+    .default-avatar {
+        background-color: #708090;
+        border-radius: 50%;
+        margin-right: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 22px;
+        height: 22px;
+    }
 }

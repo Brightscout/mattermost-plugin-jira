@@ -194,7 +194,7 @@ const channelSubscriptions = (state = {}, action) => {
     }
 };
 
-const getIssue = (state = {}, action) => {
+const storedLinkTooltipIssue = (state = {}, action) => {
     switch (action.type) {
     case ActionTypes.RECEIVED_JIRA_TICKET : {
         const ticketDetails = jiraIssueToReducer(action);
@@ -222,5 +222,5 @@ export default combineReducers({
     attachCommentToIssueModalForPostId,
     channelIdWithSettingsOpen,
     channelSubscriptions,
-    getIssue,
+    storedLinkTooltipIssue,
 });
