@@ -49,7 +49,7 @@ describe('components/jira_ticket_tooltip', () => {
             expect(instance.getIssueKey()).toEqual(expectedOutput);
         });
 
-        test('should return the null when URL does not match any pattern', () => {
+        test('should return null when URL does not match any pattern', () => {
             const wrapper = shallow(
                 <TicketPopover
                     {...props}
@@ -57,8 +57,7 @@ describe('components/jira_ticket_tooltip', () => {
                 />
             );
             const instance = wrapper.instance() as TicketPopover;
-            const expectedOutput = null;
-            expect(instance.getIssueKey()).toEqual(expectedOutput);
+            expect(instance.getIssueKey()).toEqual(null);
         });
     });
 });

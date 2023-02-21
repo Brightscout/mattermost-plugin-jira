@@ -226,27 +226,35 @@
     .jira-ticket-key {
         font-size: 12px;
     }
-}
 
-.skeleton-loader:empty {
-    max-height: 50px;
-    max-width: 300px;
-    display: block;
-    background: linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0),
-        rgba(255, 255, 255, 0.5) 50%,
-        rgba(255, 255, 255, 0) 80%
-      ),
-      lightgray;
-    background-repeat: repeat-y;
-    background-size: 50px 500px;
-    background-position: 0 0;
-    animation: shine 1s infinite;
-}
 
-@keyframes shine {
-    to {
-      background-position: 100% 0, /* move highlight to right */ 0 0;
+    .skeleton-loader {
+        &:empty {
+            max-height: 50px;
+            max-width: 300px;
+            display: block;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0) 80%
+            ),
+            lightgray;
+            background-repeat: repeat-y;
+            background-size: 50px 500px;
+            background-position: 0 0;
+            animation: shine 1s infinite;
+        }
+
+        &--text {
+            height: 15px;
+            width: 100%;
+        }
+    }
+    
+    @keyframes shine {
+        to {
+          background-position: 100% 0, /* move highlight to right */ 0 0;
+        }
     }
 }

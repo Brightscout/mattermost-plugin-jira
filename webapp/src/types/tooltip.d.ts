@@ -30,16 +30,10 @@ type TicketDataFields = {
     labels: string[];
     description: string;
     summary: string;
-    project: {
-        avatarUrls: AvatarUrls;
-    };
+    project: {avatarUrls: AvatarUrls};
     versions: string[];
-    status: {
-        name: string;
-    };
-    issuetype: {
-        iconUrl: string;
-    };
+    status: {name: string};
+    issuetype: {iconUrl: string};
 }
 
 type Action = {

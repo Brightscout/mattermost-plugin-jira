@@ -1,6 +1,10 @@
+:root {
+    --avatar-bg-color: #708090;
+}
+
 .jira-issue-tooltip{
     .default-avatar {
-        background-color: #708090;
+        background-color: var(--avatar-bg-color);
         border-radius: 50%;
         margin-right: 5px;
         display: flex;

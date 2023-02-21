@@ -41,7 +41,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
     constructor(props: Props) {
         super(props);
         const issueKey = this.getIssueKey();
-        if (issueKey === null) {
+        if (!issueKey) {
             return;
         }
 
@@ -63,12 +63,12 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                 continue;
             }
 
-            // We already check href.includes above in the if statement before this try block
+            // We have already checked the href.includes above in the if statement before this try block
             try {
                 const regex = /https:\/\/.*\/.*\?.*selectedIssue=([\w-]+)&?.*|https:\/\/.*\/browse\/([\w-]+)?.*/;
                 const result = regex.exec(this.props.href);
                 if (result) {
-                    ticketID = result[1] || result[2];
+                    ticketID = (result.length >= 2 ? result[1] : ticketID) || (result.length >= 3 ? result[2] : ticketID);
                     return {ticketID, instanceID};
                 }
                 break;
@@ -100,7 +100,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
 
     componentDidUpdate() {
         const issueKey = this.getIssueKey();
-        if (issueKey === null) {
+        if (!issueKey) {
             return;
         }
 
@@ -240,9 +240,9 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                     </div>
                 ) : (
                     <div className='popover-body'>
-                        <div className='popover-body__title skeleton-loader'/>
-                        <div className='popover-body__description skeleton-loader mt-2'/>
-                        <div className='popover-body__labels skeleton-loader'/>
+                        <div className='popover-body__title skeleton-loader skeleton-loader--text'/>
+                        <div className='popover-body__description skeleton-loader mt-2 skeleton-loader--text'/>
+                        <div className='popover-body__labels skeleton-loader skeleton-loader--text'/>
                     </div>
                 )
                 }
@@ -265,7 +265,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                             </span>
                         </span>
                     ) : (
-                        <span className={`popover-footer__assignee--assigned ${!ticketDetails && 'skeleton-loader'}`}>
+                        <span className={`popover-footer__assignee--assigned ${!ticketDetails && 'skeleton-loader skeleton-loader--text'}`}>
                             {ticketDetails ? unAssignedLabel : ''}
                         </span>
                     )
