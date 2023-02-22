@@ -398,15 +398,16 @@ func TestApplyReporterNotification(t *testing.T) {
 				Self: "test-self",
 			},
 		},
-		notifications: []webhookUserNotification{},
 	}
 	for name, tt := range map[string]struct {
-		instanceID types.ID
-		reporter   *jira.User
+		instanceID         types.ID
+		reporter           *jira.User
+		totalNotifications int
 	}{
 		"Success": {
-			instanceID: testInstance1.InstanceID,
-			reporter:   &jira.User{},
+			instanceID:         testInstance1.InstanceID,
+			reporter:           &jira.User{},
+			totalNotifications: 1,
 		},
 		"Unable to load instance": {
 			instanceID: "test-instanceID",
@@ -418,13 +419,9 @@ func TestApplyReporterNotification(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			totalNotifications := len(wh.notifications)
+			wh.notifications = []webhookUserNotification{}
 			p.applyReporterNotification(wh, tt.instanceID, tt.reporter)
-			if tt.reporter == nil || tt.instanceID == "test-instanceID" {
-				assert.Equal(t, len(wh.notifications), totalNotifications)
-			} else {
-				assert.Equal(t, len(wh.notifications), 1+totalNotifications)
-			}
+			assert.Equal(t, len(wh.notifications), tt.totalNotifications)
 		})
 	}
 }
