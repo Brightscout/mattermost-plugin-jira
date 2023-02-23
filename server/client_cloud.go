@@ -94,7 +94,7 @@ func (client jiraCloudClient) ListProjects(query string, limit int, expandIssueT
 		}
 
 		if expandIssueTypes {
-			opts["expand"] = "issueTypes"
+			opts["expand"] = QueryParamIssueTypes
 		}
 
 		var result searchResult

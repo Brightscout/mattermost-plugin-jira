@@ -16,6 +16,7 @@ const (
 	APIEndpointGetServerInfo           = "rest/api/2/serverInfo"
 	APIEndpointCreateIssueMeta         = "rest/api/2/issue/createmeta/"
 	JiraVersionWithOldIssueAPIBreaking = "9.0.0"
+	QueryParamIssueTypes               = "issueTypes"
 )
 
 type jiraServerClient struct {
@@ -181,7 +182,7 @@ func (client jiraServerClient) GetUserGroups(connection *Connection) ([]*jira.Us
 func (client jiraServerClient) ListProjects(query string, limit int, expandIssueTypes bool) (jira.ProjectList, error) {
 	queryOptions := &jira.GetQueryOptions{}
 	if expandIssueTypes {
-		queryOptions.Expand = "issueTypes"
+		queryOptions.Expand = QueryParamIssueTypes
 	}
 
 	pList, resp, err := client.Jira.Project.ListWithOptions(queryOptions)
