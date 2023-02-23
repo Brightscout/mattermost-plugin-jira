@@ -233,7 +233,7 @@
             background-position: 0 0;
             animation: shine 1s infinite;
             background-color: rgba(var(--center-channel-color-rgb), 0.15);
-            clip-path: inset(1.1px);
+            clip-path: inset(1px);
         }
 
         @keyframes shine {
