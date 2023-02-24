@@ -274,6 +274,9 @@ func TestShouldReceiveNotification(t *testing.T) {
 	cs.RolesForDMNotification = make(map[string]bool)
 	cs.RolesForDMNotification[assigneeRole] = true
 	cs.RolesForDMNotification[mentionRole] = true
+	cs.RolesForDMNotification[reporterRole] = false
+	cs.RolesForDMNotification[watchingRole] = false
+	cs.Notifications = true
 	for name, tt := range map[string]struct {
 		role         string
 		notification bool
@@ -293,6 +296,10 @@ func TestShouldReceiveNotification(t *testing.T) {
 		watchingRole: {
 			role:         watchingRole,
 			notification: false,
+		},
+		"No Role": {
+			role:         "",
+			notification: true,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
