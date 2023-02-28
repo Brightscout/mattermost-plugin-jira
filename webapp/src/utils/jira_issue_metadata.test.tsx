@@ -590,6 +590,7 @@ describe('utils/jira_issue_metadata', () => {
             expect(actual).toEqual('Project = KT AND IssueType IN (Bug) AND Priority IS EMPTY');
         });
     });
+
     describe('jiraIssueToReducer', () => {
         it('should return the ticket details with all fields', () => {
             const action: Action = {

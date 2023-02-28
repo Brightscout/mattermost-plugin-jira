@@ -63,7 +63,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                 continue;
             }
 
-            // We have already checked the href.includes above in the if statement before this try block
+            // We already check href.includes above in the if statement before this try block
             try {
                 const regex = /https:\/\/.*\/.*\?.*selectedIssue=([\w-]+)&?.*|https:\/\/.*\/browse\/([\w-]+)?.*/;
                 const result = regex.exec(this.props.href);
@@ -247,7 +247,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                 )
                 }
                 <div className='popover-footer'>
-                    {(ticketDetails && ticketDetails.assigneeAvatar) || !ticketDetails ? (
+                    {!ticketDetails || ticketDetails.assigneeAvatar ? (
                         <img
                             className={`popover-footer__assignee-profile ${!ticketDetails && 'skeleton-loader'}`}
                             src={ticketDetails && ticketDetails.assigneeAvatar}

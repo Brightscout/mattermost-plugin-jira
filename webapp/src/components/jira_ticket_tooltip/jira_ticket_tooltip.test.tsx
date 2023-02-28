@@ -4,6 +4,7 @@ import {shallow} from 'enzyme';
 import {Instance, InstanceType} from 'types/model';
 
 import TicketPopover, {Props} from './jira_ticket_tooltip';
+
 describe('components/jira_ticket_tooltip', () => {
     describe('getIssueKey', () => {
         const mockConnectedInstances: Instance[] = [
