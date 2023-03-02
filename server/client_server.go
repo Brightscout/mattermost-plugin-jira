@@ -75,9 +75,9 @@ func (client jiraServerClient) GetCreateMetaInfoForPivotJiraVersion(api plugin.A
 
 	for _, issueType := range issueInfo.Values {
 		apiEndpoint := fmt.Sprintf("%s%s/issuetypes/%s", APIEndpointCreateIssueMeta, proj.ID, issueType.Id)
-		req, err := client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
+		req, rErr := client.Jira.NewRequest(http.MethodGet, apiEndpoint, nil)
 		if err != nil {
-			api.LogDebug("Failed to get the issue type.", "IssueType", issueType, "Error", err.Error())
+			api.LogDebug("Failed to get the issue type.", "IssueType", issueType, "Error", rErr.Error())
 			continue
 		}
 
