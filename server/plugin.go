@@ -414,12 +414,7 @@ func (p *Plugin) GetSiteURL() string {
 }
 
 func (p *Plugin) CreateFullURLPath(extensionPath string) string {
-	baseURL, err := url.Parse(p.GetSiteURL())
-	if err != nil {
-		return ""
-	}
-	baseURL.Path = fmt.Sprintf("%s%s%s", baseURL.Path, p.GetPluginURLPath(), extensionPath)
-	return baseURL.String()
+	return fmt.Sprintf("%s%s%s", p.GetSiteURL(), p.GetPluginURLPath(), extensionPath)
 }
 
 func (p *Plugin) debugf(f string, args ...interface{}) {
