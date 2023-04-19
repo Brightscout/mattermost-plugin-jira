@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import createMeta from 'testdata/cloud-get-create-issue-metadata-for-project-many-fields.json';
+import {ticketData} from 'testdata/get-ticket-metadata-for-tooltip';
 import {useFieldForIssueMetadata} from 'testdata/jira-issue-metadata-helpers';
 
 import {IssueMetadata, JiraField, FilterField, ChannelSubscriptionFilters, FilterFieldInclusion, IssueType, Project} from 'types/model';
@@ -602,6 +603,8 @@ describe('utils/jira_issue_metadata', () => {
                             displayName: 'Mock Name',
                             avatarUrls: {
                                 '48x48': 'https://something.atlassian.net/avatar.png',
+
+                                // '36x36': 'https://something.atlassian.net/avatar.png',
                             },
                         },
                         labels: ['label1', 'label2'],

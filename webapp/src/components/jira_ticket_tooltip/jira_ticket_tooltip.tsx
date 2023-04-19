@@ -210,7 +210,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                                 width={14}
                                 height={14}
                                 alt={ticketDetails ? 'jira-avatar' : ''}
-                                className={`popover-header__avatar ${ticketDetails || 'skeleton-loader'}`}
+                                className={`popover-header__avatar ${ticketDetails ? '' : 'skeleton-loader'}`}
                             />
                         </a>
                         <a
@@ -225,7 +225,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                                 width='14'
                                 height='14'
                                 src={ticketDetails ? ticketDetails.issueIcon : ''}
-                                className={`${!ticketDetails && 'skeleton-loader'}`}
+                                className={`${ticketDetails ? '' : 'skeleton-loader'}`}
                             />
                         </a>
                     </div>
@@ -261,7 +261,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                 <div className='popover-footer'>
                     {!ticketDetails || ticketDetails.assigneeAvatar ? (
                         <img
-                            className={`popover-footer__assignee-profile ${ticketDetails || 'skeleton-loader'}`}
+                            className={`popover-footer__assignee-profile ${ticketDetails ? '' : 'skeleton-loader'}`}
                             src={ticketDetails ? ticketDetails.assigneeAvatar : ''}
                             alt={ticketDetails ? 'jira assignee profile' : ''}
                         />
@@ -277,7 +277,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                             </span>
                         </span>
                     ) : (
-                        <span className={`popover-footer__assignee--assigned ${ticketDetails || 'skeleton-loader skeleton-loader--text'}`}>
+                        <span className={`popover-footer__assignee--assigned ${ticketDetails ? '' : 'skeleton-loader skeleton-loader--text'}`}>
                             {ticketDetails ? unAssignedLabel : ''}
                         </span>
                     )
