@@ -13,6 +13,7 @@
 		.btn {
 			-webkit-transition: all 0.15s ease;
 			-webkit-transition-delay: 0s;
+			transition-delay: 0s;
 			-moz-transition: all 0.15s ease;
 			-o-transition: all 0.15s ease;
 			transition: all 0.15s ease false;
@@ -61,6 +62,22 @@
 			AP.context.getToken(function (token) {
 				document.getElementById('{{ .ArgJiraJWT }}').value = token;
 			});
+
+			const handleDisconnect = () => {
+				// Splitting the cookies string on the basis of cookie name and then popping out the first value.
+				const token = ('; ' + document.cookie).split('; MMCSRF=').pop().split(';')[0];
+				
+				fetch("{{ .DisconnectSubmitURL }}", {
+					method: "POST",
+					headers: {'X-CSRF-Token': token},
+				}).then(res => {
+					let element = document.getElementsByTagName("body")[0]
+					if(!res.ok) {
+						element.style.margin = "10px"
+      				}
+					return res.text().then(text => element.innerHTML = text)
+				})
+			}
 		</script>
 	</head>
 	<body>
@@ -75,7 +92,7 @@
 				<div>Mattermost account: {{ .MattermostDisplayName }}</div>
 				<div>Jira account: {{ .JiraDisplayName }}</div>
 			</div>
-			<form id="user_connect" name="user_connect" action="{{ .DisconnectSubmitURL }}">
+			<form id="user_connect" name="user_connect" onsubmit="handleDisconnect()">
 				<input type="hidden" id="{{ .ArgJiraJWT }}" name="{{ .ArgJiraJWT}}" value="none"/>
 				<input type="hidden" id="{{ .ArgMMToken }}" name="{{ .ArgMMToken}}" value="{{ .MMToken }}"/>
 				<input type="submit" class="btn btn-link" value="Disconnect"/>
