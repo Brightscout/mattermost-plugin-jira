@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/andygrunwald/go-jira"
+
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
 
@@ -69,7 +70,6 @@ func (jwh *JiraWebhook) expandIssue(p *Plugin, instanceID types.ID) error {
 
 			jwh.Issue = *issue
 		}
-
 	}
 
 	return nil
