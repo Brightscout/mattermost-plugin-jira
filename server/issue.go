@@ -739,7 +739,7 @@ func getIssueCustomFieldValue(issue *jira.Issue, key string) StringSet {
 func (p *Plugin) getIssueDataForCloudWebhook(instance Instance, issueKey string) (*jira.Issue, error) {
 	ci, ok := instance.(*cloudInstance)
 	if !ok {
-		return nil, errors.Errorf("Must be a JIRA Cloud instance, is %s", instance.Common().Type)
+		return nil, errors.Errorf("must be a Jira cloud instance, is %s", instance.Common().Type)
 	}
 
 	jiraClient, err := ci.getClientForBot()

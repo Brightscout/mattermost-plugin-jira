@@ -48,17 +48,17 @@ func (jwh *JiraWebhook) expandIssue(p *Plugin, instanceID types.ID) error {
 
 			jwh.Issue = *issue
 		} else if _, ok := instance.(*cloudOAuthInstance); ok {
-			mmID, err := p.userStore.LoadMattermostUserID(instanceID, jwh.Comment.Author.AccountID)
+			mmUserID, err := p.userStore.LoadMattermostUserID(instanceID, jwh.Comment.Author.AccountID)
 			if err != nil {
 				return err
 			}
 
-			c, err := p.userStore.LoadConnection(instance.GetID(), mmID)
+			conn, err := p.userStore.LoadConnection(instance.GetID(), mmUserID)
 			if err != nil {
 				return err
 			}
 
-			client, err := instance.GetClient(c)
+			client, err := instance.GetClient(conn)
 			if err != nil {
 				return err
 			}
