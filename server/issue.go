@@ -751,9 +751,7 @@ func (p *Plugin) getIssueDataForCloudWebhook(instance Instance, issueKey string)
 	if err != nil {
 		switch {
 		case resp == nil:
-			return nil, errors.WithMessage(userFriendlyJiraError(nil, err),
-				"request to Jira failed")
-
+			return nil, errors.WithMessage(userFriendlyJiraError(nil, err), "request to Jira failed")
 		case resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusUnauthorized:
 			return nil, errors.New(`we couldn't find the issue key, or the cloud "bot" client does not have the appropriate permissions to view the issue`)
 		}
