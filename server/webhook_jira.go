@@ -38,9 +38,13 @@ func (jwh *JiraWebhook) expandIssue(p *Plugin, instanceID types.ID) error {
 		return err
 	}
 
+	if !instance.Common().IsCloudInstance() {
+		return nil
+	}
+
 	// Jira Cloud comment event. We need to fetch issue data because it is not expanded in webhook payload.
 	isCommentEvent := jwh.WebhookEvent == commentCreated || jwh.WebhookEvent == commentUpdated || jwh.WebhookEvent == commentDeleted
-	if instance.Common().IsCloudInstance() && isCommentEvent {
+	if isCommentEvent {
 		if _, ok := instance.(*cloudInstance); ok {
 			issue, err := p.getIssueDataForCloudWebhook(instance, jwh.Issue.ID)
 			if err != nil {
