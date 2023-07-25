@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/andygrunwald/go-jira"
+	"github.com/pkg/errors"
 
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
@@ -39,7 +40,7 @@ func (jwh *JiraWebhook) expandIssue(p *Plugin, instanceID types.ID) error {
 
 	// Jira Cloud comment event. We need to fetch issue data because it is not expanded in webhook payload.
 	isCommentEvent := jwh.WebhookEvent == commentCreated || jwh.WebhookEvent == commentUpdated || jwh.WebhookEvent == commentDeleted
-	if isCommentEvent && instance.Common().IsCloudInstance() {
+	if instance.Common().IsCloudInstance() && isCommentEvent {
 		if _, ok := instance.(*cloudInstance); ok {
 			issue, err := p.getIssueDataForCloudWebhook(instance, jwh.Issue.ID)
 			if err != nil {
@@ -50,7 +51,7 @@ func (jwh *JiraWebhook) expandIssue(p *Plugin, instanceID types.ID) error {
 		} else if _, ok := instance.(*cloudOAuthInstance); ok {
 			mmUserID, err := p.userStore.LoadMattermostUserID(instanceID, jwh.Comment.Author.AccountID)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "Cannot create subscription posts for this comment as the Jira comment author is not connected to Mattermost.")
 			}
 
 			conn, err := p.userStore.LoadConnection(instance.GetID(), mmUserID)
