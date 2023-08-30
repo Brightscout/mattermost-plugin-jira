@@ -162,7 +162,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
             subtext = 'Includes when the value is empty';
             break;
         case FilterFieldInclusion.INCLUDE_OR_EMPTY:
-            subtext = 'Includes the values or when the value is empty';
+            subtext = 'Includes the specified values or when the value is empty';
             break;
         }
 

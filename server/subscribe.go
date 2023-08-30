@@ -194,7 +194,7 @@ func isValidFieldInclusion(field FieldFilter, value StringSet, inclusion string)
 		(inclusion == FilterIncludeAll && !containsAll) ||
 		(inclusion == FilterExcludeAny && containsAny) ||
 		(inclusion == FilterEmpty && value.Len() > 0) ||
-		(inclusion == FilterIncludeOrEmpty && (!containsAny && value.Len() != 0)) {
+		(inclusion == FilterIncludeOrEmpty && !containsAny && value.Len() > 0) {
 		return false
 	}
 
