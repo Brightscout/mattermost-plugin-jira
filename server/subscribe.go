@@ -26,10 +26,10 @@ import (
 const (
 	JiraSubscriptionsKey = "jirasub"
 
-	FilterIncludeAny = "include_any"
-	FilterIncludeAll = "include_all"
-	FilterExcludeAny = "exclude_any"
-	FilterEmpty      = "empty"
+	FilterIncludeAny      = "include_any"
+	FilterIncludeAll      = "include_all"
+	FilterExcludeAny      = "exclude_any"
+	FilterEmpty           = "empty"
 	FilterIncludeAnyEmpty = "include_any_empty"
 
 	MaxSubscriptionNameLength = 100
@@ -193,7 +193,7 @@ func isValidFieldInclusion(field FieldFilter, value StringSet, inclusion string)
 	if (inclusion == FilterIncludeAny && !containsAny) ||
 		(inclusion == FilterIncludeAll && !containsAll) ||
 		(inclusion == FilterExcludeAny && containsAny) ||
-		(inclusion == FilterEmpty && value.Len() > 0) || 
+		(inclusion == FilterEmpty && value.Len() > 0) ||
 		(inclusion == FilterIncludeAnyEmpty && (!containsAny && value.Len() != 0)) {
 		return false
 	}
