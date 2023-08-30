@@ -30,7 +30,7 @@ const (
 	FilterIncludeAll      = "include_all"
 	FilterExcludeAny      = "exclude_any"
 	FilterEmpty           = "empty"
-	FilterIncludeAnyEmpty = "include_any_empty"
+	FilterIncludeOrEmpty = "include_or_empty"
 
 	MaxSubscriptionNameLength = 100
 )
@@ -194,7 +194,7 @@ func isValidFieldInclusion(field FieldFilter, value StringSet, inclusion string)
 		(inclusion == FilterIncludeAll && !containsAll) ||
 		(inclusion == FilterExcludeAny && containsAny) ||
 		(inclusion == FilterEmpty && value.Len() > 0) ||
-		(inclusion == FilterIncludeAnyEmpty && (!containsAny && value.Len() != 0)) {
+		(inclusion == FilterIncludeOrEmpty && (!containsAny && value.Len() != 0)) {
 		return false
 	}
 

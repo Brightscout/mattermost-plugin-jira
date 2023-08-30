@@ -131,7 +131,7 @@ export enum FilterFieldInclusion {
     INCLUDE_ALL = 'include_all',
     EXCLUDE_ANY = 'exclude_any',
     EMPTY = 'empty',
-    INCLUDE_EMPTY = 'include_any_empty',
+    INCLUDE_OR_EMPTY = 'include_or_empty',
 }
 
 export type FilterValue = {

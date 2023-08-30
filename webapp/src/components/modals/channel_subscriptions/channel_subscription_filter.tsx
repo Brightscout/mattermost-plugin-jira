@@ -161,7 +161,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
         case FilterFieldInclusion.EMPTY:
             subtext = 'Includes when the value is empty';
             break;
-        case FilterFieldInclusion.INCLUDE_EMPTY:
+        case FilterFieldInclusion.INCLUDE_OR_EMPTY:
             subtext = 'Includes the values or when the value is empty';
             break;
         }
@@ -192,7 +192,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
             {label: 'Include All', value: FilterFieldInclusion.INCLUDE_ALL},
             {label: 'Exclude', value: FilterFieldInclusion.EXCLUDE_ANY},
             {label: 'Empty', value: FilterFieldInclusion.EMPTY},
-            {label: 'Include or Empty', value: FilterFieldInclusion.INCLUDE_EMPTY},
+            {label: 'Include or Empty', value: FilterFieldInclusion.INCLUDE_OR_EMPTY},
         ];
 
         if (isSecurityLevelField(field) && value.inclusion !== FilterFieldInclusion.EXCLUDE_ANY && this.props.securityLevelEmptyForJiraSubscriptions) {
