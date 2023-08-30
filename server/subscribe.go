@@ -201,7 +201,6 @@ func isValidFieldInclusion(field FieldFilter, value StringSet, inclusion string)
 	return true
 }
 
-
 func (p *Plugin) getChannelsSubscribed(wh *webhook, instanceID types.ID) ([]ChannelSubscription, error) {
 	subs, err := p.getSubscriptions(instanceID)
 	if err != nil {
