@@ -318,8 +318,11 @@ func (p *Plugin) CreateIssue(in *InCreateIssue) (*jira.Issue, error) {
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to fetch issue details "+created.Key)
 	}
-
-	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, project.Key)
+	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, &DefaultFieldValues{
+		ProjectKey: project.Key,
+		IssueType:  issue.Fields.Type.ID,
+		Components: issue.Fields.Components,
+	})
 
 	// Create a public post for all the channel members
 	publicReply := &model.Post{
@@ -457,9 +460,9 @@ func (p *Plugin) GetSearchIssues(instanceID, mattermostUserID types.ID, q, jqlSt
 }
 
 type OutProjectMetadata struct {
-	Projects          []utils.ReactSelectOption            `json:"projects"`
-	IssuesPerProjects map[string][]utils.ReactSelectOption `json:"issues_per_project"`
-	DefaultProjectKey string                               `json:"default_project_key,omitempty"`
+	Projects           []utils.ReactSelectOption            `json:"projects"`
+	IssuesPerProjects  map[string][]utils.ReactSelectOption `json:"issues_per_project"`
+	DefaultFieldValues *DefaultFieldValues                  `json:"default_field_values,omitempty"`
 }
 
 func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Request) (int, error) {
@@ -524,9 +527,9 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	}
 
 	return respondJSON(w, OutProjectMetadata{
-		Projects:          projects,
-		IssuesPerProjects: issues,
-		DefaultProjectKey: connection.DefaultProjectKey,
+		Projects:           projects,
+		IssuesPerProjects:  issues,
+		DefaultFieldValues: connection.DefaultFieldValues,
 	})
 }
 
@@ -655,7 +658,7 @@ func (p *Plugin) AttachCommentToIssue(in *InAttachCommentToIssue) (*jira.Comment
 		rootID = post.RootId
 	}
 
-	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, "")
+	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, nil)
 
 	msg := fmt.Sprintf("Message attached to [%s](%s/browse/%s)", in.IssueKey, instance.GetJiraBaseURL(), in.IssueKey)
 
