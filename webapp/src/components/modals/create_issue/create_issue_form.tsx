@@ -116,9 +116,10 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
     }
 
     handleProjectChange = (fieldValues: DefaultFieldValues) => {
-        this.setState({projectKey: fieldValues.project_key as string, fetchingIssueMetadata: true, error: null});
+        const projectKey = fieldValues.project_key ? fieldValues.project_key : '';
+        this.setState({projectKey, fetchingIssueMetadata: true, error: null});
 
-        this.props.fetchJiraIssueMetadataForProjects([fieldValues.project_key as string], this.state.instanceID as string).then(({data, error}) => {
+        this.props.fetchJiraIssueMetadataForProjects([projectKey], this.state.instanceID as string).then(({data, error}) => {
             const state = {
                 fetchingIssueMetadata: false,
                 error: null,
@@ -135,7 +136,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
         let fields = {
             summary: this.state.fields.summary,
             description: this.state.fields.description,
-            project: {key: fieldValues.project_key as string},
+            project: {key: projectKey},
         } as CreateIssueFields;
 
         if (fieldValues.issue_type) {
@@ -143,7 +144,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
                 id: fieldValues.issue_type,
             };
         } else {
-            const issueTypes = getIssueTypes(this.state.jiraIssueMetadata, fieldValues.project_key as string);
+            const issueTypes = getIssueTypes(this.state.jiraIssueMetadata, projectKey);
             const issueType = issueTypes.length ? issueTypes[0].id : '';
             fields.issuetype = {
                 id: issueType,
@@ -156,8 +157,8 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
         }
 
         this.setState({
-            projectKey: fieldValues.project_key as string,
-            issueType: fieldValues.issue_type as string,
+            projectKey,
+            issueType: fieldValues.issue_type ? fieldValues.issue_type : '',
             fields,
         });
     }
