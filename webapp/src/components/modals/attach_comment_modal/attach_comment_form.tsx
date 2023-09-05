@@ -8,7 +8,7 @@ import {Post} from 'mattermost-redux/types/posts';
 import {Team} from 'mattermost-redux/types/teams';
 import {Theme} from 'mattermost-redux/types/preferences';
 
-import {APIResponse, AttachCommentRequest} from 'types/model';
+import {APIResponse, AttachCommentRequest, DefaultFieldValues} from 'types/model';
 
 import {getModalStyles} from 'utils/styles';
 
@@ -94,7 +94,7 @@ export default class AttachCommentToIssueForm extends PureComponent<Props, State
                 selectedProjectID={''}
                 hideProjectSelector={true}
                 onInstanceChange={(instanceID: string) => this.setState({instanceID})}
-                onProjectChange={(projectKey: string) => {}}
+                onProjectChange={(_: DefaultFieldValues) => {}}
                 theme={this.props.theme}
                 addValidate={this.validator.addComponent}
                 removeValidate={this.validator.removeComponent}
