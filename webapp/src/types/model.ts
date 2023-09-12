@@ -72,10 +72,10 @@ export type IssueMetadata = {
 export type ProjectMetadata = {
     projects: ReactSelectOption[];
     issues_per_project: {[key: string]: ReactSelectOption[]};
-    default_field_values?: DefaultFieldValues;
+    saved_field_values?: SavedFieldValues;
 }
 
-export type DefaultFieldValues = {
+export type SavedFieldValues = {
     project_key?: string;
     issue_type?: string;
     components?: JiraField;

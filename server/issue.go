@@ -318,7 +318,7 @@ func (p *Plugin) CreateIssue(in *InCreateIssue) (*jira.Issue, error) {
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed to fetch issue details "+created.Key)
 	}
-	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, &DefaultFieldValues{
+	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, &SavedFieldValues{
 		ProjectKey: project.Key,
 		IssueType:  issue.Fields.Type.ID,
 		Components: issue.Fields.Components,
@@ -460,9 +460,9 @@ func (p *Plugin) GetSearchIssues(instanceID, mattermostUserID types.ID, q, jqlSt
 }
 
 type OutProjectMetadata struct {
-	Projects           []utils.ReactSelectOption            `json:"projects"`
-	IssuesPerProjects  map[string][]utils.ReactSelectOption `json:"issues_per_project"`
-	DefaultFieldValues *DefaultFieldValues                  `json:"default_field_values,omitempty"`
+	Projects          []utils.ReactSelectOption            `json:"projects"`
+	IssuesPerProjects map[string][]utils.ReactSelectOption `json:"issues_per_project"`
+	SavedFieldValues  *SavedFieldValues                    `json:"saved_field_values,omitempty"`
 }
 
 func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Request) (int, error) {
@@ -527,9 +527,9 @@ func (p *Plugin) httpGetJiraProjectMetadata(w http.ResponseWriter, r *http.Reque
 	}
 
 	return respondJSON(w, OutProjectMetadata{
-		Projects:           projects,
-		IssuesPerProjects:  issues,
-		DefaultFieldValues: connection.DefaultFieldValues,
+		Projects:          projects,
+		IssuesPerProjects: issues,
+		SavedFieldValues:  connection.SavedFieldValues,
 	})
 }
 

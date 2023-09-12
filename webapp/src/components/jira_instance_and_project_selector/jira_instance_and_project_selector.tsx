@@ -2,7 +2,7 @@ import React from 'react';
 
 import {Theme} from 'mattermost-redux/types/preferences';
 
-import {Instance, ProjectMetadata, ReactSelectOption, APIResponse, GetConnectedResponse, DefaultFieldValues} from 'types/model';
+import {Instance, ProjectMetadata, ReactSelectOption, APIResponse, GetConnectedResponse, SavedFieldValues} from 'types/model';
 import ReactSelectSetting from 'components/react_select_setting';
 import {getProjectValues} from 'utils/jira_issue_metadata';
 
@@ -10,7 +10,7 @@ export type Props = {
     selectedInstanceID: string | null;
     selectedProjectID: string | null;
     onInstanceChange: (instanceID: string) => void;
-    onProjectChange: (fieldValues: DefaultFieldValues) => void;
+    onProjectChange: (fieldValues: SavedFieldValues) => void;
     onError: (err: string) => void;
 
     theme: Theme;
@@ -95,8 +95,8 @@ export default class JiraInstanceAndProjectSelector extends React.PureComponent<
             fetchingProjectMetadata: false,
         });
 
-        if (projectMetadata.default_field_values && projectMetadata.default_field_values.project_key && !this.props.selectedProjectID) {
-            this.props.onProjectChange(projectMetadata.default_field_values);
+        if (projectMetadata.saved_field_values && projectMetadata.saved_field_values.project_key && !this.props.selectedProjectID) {
+            this.props.onProjectChange(projectMetadata.saved_field_values);
         }
     }
 

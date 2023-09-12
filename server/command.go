@@ -1035,8 +1035,8 @@ func executeMe(p *Plugin, c *plugin.Context, header *model.CommandArgs, args ...
 
 			resp += connectionBullet(info.User.ConnectedInstances.Get(instanceID), connection, info.User.DefaultInstanceID == instanceID)
 			resp += fmt.Sprintf("   * %s\n", connection.Settings)
-			if connection.DefaultFieldValues != nil && connection.DefaultFieldValues.ProjectKey != "" {
-				resp += fmt.Sprintf("   * Default project: `%s`\n", connection.DefaultFieldValues.ProjectKey)
+			if connection.SavedFieldValues != nil && connection.SavedFieldValues.ProjectKey != "" {
+				resp += fmt.Sprintf("   * Default project: `%s`\n", connection.SavedFieldValues.ProjectKey)
 			}
 		}
 	}

@@ -26,7 +26,7 @@ describe('components/JiraInstanceAndProjectSelector', () => {
         connectedInstances: [{instance_id: 'instance1', type: InstanceType.CLOUD}, {instance_id: 'instance2', type: InstanceType.SERVER}],
         defaultUserInstanceID: '',
         fetchJiraProjectMetadata: jest.fn().mockResolvedValue({data: {
-            default_field_values: {
+            saved_field_values: {
                 project_key: 'TEST',
             },
             projects: [

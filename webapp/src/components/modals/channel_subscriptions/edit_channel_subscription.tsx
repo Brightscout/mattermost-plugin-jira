@@ -22,7 +22,7 @@ import {
     filterValueIsSecurityField,
 } from 'utils/jira_issue_metadata';
 
-import {ChannelSubscription, ChannelSubscriptionFilters as ChannelSubscriptionFiltersModel, ReactSelectOption, FilterValue, IssueMetadata, DefaultFieldValues} from 'types/model';
+import {ChannelSubscription, ChannelSubscriptionFilters as ChannelSubscriptionFiltersModel, ReactSelectOption, FilterValue, IssueMetadata, SavedFieldValues} from 'types/model';
 
 import ChannelSubscriptionFilters from './channel_subscription_filters';
 import {SharedProps} from './shared_props';
@@ -247,7 +247,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         this.handleProjectChange({});
     }
 
-    handleProjectChange = (fieldValues: DefaultFieldValues) => {
+    handleProjectChange = (fieldValues: SavedFieldValues) => {
         const projectID = fieldValues.project_key ? fieldValues.project_key : '';
         this.clearConflictingErrorMessage();
 
