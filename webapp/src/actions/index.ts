@@ -180,6 +180,22 @@ export const createIssue = (payload: CreateIssueRequest) => {
     };
 };
 
+export const getProjectStatuses = (instanceID: string, projectID: string) => {
+    return async (dispatch, getState) => {
+        const baseUrl = getPluginServerRoute(getState());
+        let data = null;
+        try {
+            data = await doFetch(`${baseUrl}/api/v2/get-project-statuses?instance_id=${instanceID}&project_id=${projectID}`, {
+                method: 'get',
+            });
+        } catch (error) {
+            return {error};
+        }
+
+        return {data};
+    };
+};
+
 export const attachCommentToIssue = (payload) => {
     return async (dispatch, getState) => {
         const baseUrl = getPluginServerRoute(getState());

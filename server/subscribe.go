@@ -41,10 +41,11 @@ type FieldFilter struct {
 }
 
 type SubscriptionFilters struct {
-	Events     StringSet     `json:"events"`
-	Projects   StringSet     `json:"projects"`
-	IssueTypes StringSet     `json:"issue_types"`
-	Fields     []FieldFilter `json:"fields"`
+	Events        StringSet     `json:"events"`
+	Projects      StringSet     `json:"projects"`
+	IssueStatuses StringSet     `json:"issue_statuses"`
+	IssueTypes    StringSet     `json:"issue_types"`
+	Fields        []FieldFilter `json:"fields"`
 }
 
 type ChannelSubscription struct {
@@ -145,6 +146,10 @@ func (p *Plugin) matchesSubsciptionFilters(wh *webhook, filters SubscriptionFilt
 	issue := &wh.JiraWebhook.Issue
 
 	if filters.IssueTypes.Len() != 0 && !filters.IssueTypes.ContainsAny(issue.Fields.Type.ID) {
+		return false
+	}
+
+	if filters.IssueStatuses.Len() != 0 && !filters.IssueStatuses.ContainsAny(issue.Fields.Status.ID) {
 		return false
 	}
 
@@ -745,6 +750,7 @@ func (p *Plugin) hasPermissionToManageSubscription(instanceID types.ID, userID, 
 }
 
 func (p *Plugin) httpSubscribeWebhook(w http.ResponseWriter, r *http.Request, instanceID types.ID) (status int, err error) {
+	fmt.Printf("\n\n\ninside webhookk\n\n")
 	conf := p.getConfig()
 
 	if conf.Secret == "" {
@@ -781,6 +787,8 @@ func (p *Plugin) httpSubscribeWebhook(w http.ResponseWriter, r *http.Request, in
 func (p *Plugin) httpChannelCreateSubscription(w http.ResponseWriter, r *http.Request) (int, error) {
 	mattermostUserID := r.Header.Get("Mattermost-User-Id")
 	subscription := ChannelSubscription{}
+	// bytes, _ := io.ReadAll(r.Body)
+	// fmt.Printf("\n\n\ncreate sub body   %+v\n\n\n", string(bytes))
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
 		return respondErr(w, http.StatusBadRequest,

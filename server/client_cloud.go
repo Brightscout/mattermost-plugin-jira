@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	jira "github.com/andygrunwald/go-jira"
@@ -118,6 +119,25 @@ func (client jiraCloudClient) ListProjects(query string, limit int, expandIssueT
 			return out, nil
 		}
 	}
+}
+
+type IssueType struct {
+	Self     string         `json:"self"`
+	ID       string         `json:"id"`
+	Name     string         `json:"name"`
+	Subtask  bool           `json:"subtask"`
+	Statuses []*jira.Status `json:"statuses"`
+}
+
+func (client jiraCloudClient) ListProjectStatuses(projectID string) ([]*IssueType, error) {
+	var result []*IssueType
+	opts := map[string]string{}
+
+	if err := client.RESTGet(fmt.Sprintf("3/project/%s/statuses", projectID), opts, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (client jiraCloudClient) GetIssueTypes(projectID string) ([]jira.IssueType, error) {
