@@ -542,11 +542,10 @@ func (p *Plugin) ListJiraProjects(instanceID, mattermostUserID types.ID, expandI
 	return plist, connection, nil
 }
 
-func (p *Plugin) httpGetJiraIssueStasuses(w http.ResponseWriter, r *http.Request) (int, error) {
+func (p *Plugin) httpGetJiraProjectStatuses(w http.ResponseWriter, r *http.Request) (int, error) {
 	mattermostUserID := r.Header.Get("Mattermost-User-Id")
 	instanceID := r.FormValue("instance_id")
 	projectID := r.FormValue("project_id")
-
 	client, _, _, err := p.getClient(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
 		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(err, "failed to GetProjectMetadata"))

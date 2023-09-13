@@ -34,7 +34,7 @@ const (
 	routeAPICreateIssue                         = "/create-issue"
 	routeAPIGetCreateIssueMetadata              = "/get-create-issue-metadata-for-project"
 	routeAPIGetJiraProjectMetadata              = "/get-jira-project-metadata"
-	routeAPIGetJiraIssueStasuses                = "/get-project-statuses"
+	routeAPIGetJiraProjectStasuses              = "/get-project-statuses"
 	routeAPIGetSearchIssues                     = "/get-search-issues"
 	routeAPIGetAutoCompleteFields               = "/get-search-autocomplete-fields"
 	routeAPIGetSearchUsers                      = "/get-search-users"
@@ -99,7 +99,7 @@ func (p *Plugin) initializeRouter() {
 	apiRouter.HandleFunc(routeAPICreateIssue, p.checkAuth(p.handleResponse(p.httpCreateIssue))).Methods(http.MethodPost)
 	apiRouter.HandleFunc(routeAPIGetCreateIssueMetadata, p.checkAuth(p.handleResponse(p.httpGetCreateIssueMetadataForProjects))).Methods(http.MethodGet)
 	apiRouter.HandleFunc(routeAPIGetJiraProjectMetadata, p.checkAuth(p.handleResponse(p.httpGetJiraProjectMetadata))).Methods(http.MethodGet)
-	apiRouter.HandleFunc(routeAPIGetJiraIssueStasuses, p.checkAuth(p.handleResponse(p.httpGetJiraIssueStasuses))).Methods(http.MethodGet)
+	apiRouter.HandleFunc(routeAPIGetJiraProjectStasuses, p.checkAuth(p.handleResponse(p.httpGetJiraProjectStatuses))).Methods(http.MethodGet)
 	apiRouter.HandleFunc(routeAPIGetSearchIssues, p.checkAuth(p.handleResponse(p.httpGetSearchIssues))).Methods(http.MethodGet)
 	apiRouter.HandleFunc(routeAPIGetSearchUsers, p.checkAuth(p.handleResponse(p.httpGetSearchUsers))).Methods(http.MethodGet)
 	apiRouter.HandleFunc(routeAPIAttachCommentToIssue, p.checkAuth(p.handleResponse(p.httpAttachCommentToIssue))).Methods(http.MethodPost)

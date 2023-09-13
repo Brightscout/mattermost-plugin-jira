@@ -66,6 +66,7 @@ export type State = {
     jiraIssueMetadata: IssueMetadata | null;
     error: string | null;
     getMetaDataErr: string | null;
+    getIssueStatusesErr: string | null;
     submitting: boolean;
     subscriptionName: string | null;
     showConfirmModal: boolean;
@@ -111,6 +112,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         this.state = {
             error: null,
             getMetaDataErr: null,
+            getIssueStatusesErr: null,
             submitting: false,
             filters,
             fetchingIssueMetadata,
@@ -268,30 +270,34 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
     fetchIssueStatuses = (projectID: string, instanceID: string) => {
         if (!instanceID) {
-            this.setState({getMetaDataErr: 'No Jira instance is selected.'});
+            this.setState({getIssueStatusesErr: 'No Jira instance is selected.'});
+            return;
         }
 
         this.props.getProjectStatuses(instanceID, projectID).then(({data, error}) => {
             const projectStatuses = data as ProjectStatuses[];
 
+            if (error) {
+                this.setState({getIssueStatusesErr: 'Error occurred while getting the issue statuses.'});
+                return;
+            }
+
             const keys: string[] = [];
             const statuses: Status[] = [];
-            projectStatuses.forEach((element: ProjectStatuses) => {
-                if (this.state.filters.issue_types.includes(element.id) || !this.state.filters.issue_types.length) {
-                    element.statuses.forEach((status) => {
-                        if (!keys.includes(status.id)) {
-                            keys.push(status.id);
-                            statuses.push(status);
-                        }
-                    });
-                }
-            });
+            if (projectStatuses) {
+                projectStatuses.forEach((element: ProjectStatuses) => {
+                    if (this.state.filters.issue_types.includes(element.id) || !this.state.filters.issue_types.length) {
+                        element.statuses.forEach((status) => {
+                            if (!keys.includes(status.id)) {
+                                keys.push(status.id);
+                                statuses.push(status);
+                            }
+                        });
+                    }
+                });
+            }
 
             const state = {issue_statuses: statuses, projectStatuses} as State;
-
-            if (error) {
-                state.getMetaDataErr = `The project ${projectID} is unavailable. Please contact your system administrator.`;
-            }
 
             this.setState(state);
         });
@@ -342,6 +348,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         this.setState({
             fetchingIssueMetadata,
             getMetaDataErr: null,
+            getIssueStatusesErr: null,
             filters,
         });
     };
@@ -423,6 +430,15 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             );
         }
 
+        let getIssueStatusesErrorComponent = null;
+        if (this.state.getIssueStatusesErr) {
+            getIssueStatusesErrorComponent = (
+                <p className='help-text error-text'>
+                    <span>{this.state.getIssueStatusesErr}</span>
+                </p>
+            );
+        }
+
         let component = null;
         if (this.props.channel && this.props.channelSubscriptions) {
             let innerComponent = null;
@@ -468,6 +484,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                             addValidate={this.validator.addComponent}
                             removeValidate={this.validator.removeComponent}
                         />
+                        {getIssueStatusesErrorComponent}
                         <ChannelSubscriptionFilters
                             fields={filterFields}
                             values={this.state.filters.fields}

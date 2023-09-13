@@ -750,7 +750,6 @@ func (p *Plugin) hasPermissionToManageSubscription(instanceID types.ID, userID, 
 }
 
 func (p *Plugin) httpSubscribeWebhook(w http.ResponseWriter, r *http.Request, instanceID types.ID) (status int, err error) {
-	fmt.Printf("\n\n\ninside webhookk\n\n")
 	conf := p.getConfig()
 
 	if conf.Secret == "" {
@@ -787,8 +786,6 @@ func (p *Plugin) httpSubscribeWebhook(w http.ResponseWriter, r *http.Request, in
 func (p *Plugin) httpChannelCreateSubscription(w http.ResponseWriter, r *http.Request) (int, error) {
 	mattermostUserID := r.Header.Get("Mattermost-User-Id")
 	subscription := ChannelSubscription{}
-	// bytes, _ := io.ReadAll(r.Body)
-	// fmt.Printf("\n\n\ncreate sub body   %+v\n\n\n", string(bytes))
 	err := json.NewDecoder(r.Body).Decode(&subscription)
 	if err != nil {
 		return respondErr(w, http.StatusBadRequest,
