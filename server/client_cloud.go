@@ -121,11 +121,21 @@ func (client jiraCloudClient) ListProjects(query string, limit int, expandIssueT
 	}
 }
 
+func (client jiraCloudClient) GetIssueTypes(projectID string) ([]jira.IssueType, error) {
+	var result []jira.IssueType
+	opts := map[string]string{
+		"projectId": projectID,
+	}
+
+	if err := client.RESTGet("3/issuetype/project", opts, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 type IssueType struct {
-	Self     string         `json:"self"`
-	ID       string         `json:"id"`
-	Name     string         `json:"name"`
-	Subtask  bool           `json:"subtask"`
+	*jira.IssueType
 	Statuses []*jira.Status `json:"statuses"`
 }
 
@@ -134,19 +144,6 @@ func (client jiraCloudClient) ListProjectStatuses(projectID string) ([]*IssueTyp
 	opts := map[string]string{}
 
 	if err := client.RESTGet(fmt.Sprintf("3/project/%s/statuses", projectID), opts, &result); err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func (client jiraCloudClient) GetIssueTypes(projectID string) ([]jira.IssueType, error) {
-	var result []jira.IssueType
-	opts := map[string]string{
-		"projectId": projectID,
-	}
-
-	if err := client.RESTGet("3/issuetype/project", opts, &result); err != nil {
 		return nil, err
 	}
 

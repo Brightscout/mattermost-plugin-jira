@@ -26,7 +26,6 @@ import {ChannelSubscription, ChannelSubscriptionFilters as ChannelSubscriptionFi
 
 import ChannelSubscriptionFilters from './channel_subscription_filters';
 import {SharedProps} from './shared_props';
-import { log } from 'console';
 
 const JiraEventOptions: ReactSelectOption[] = [
     {value: 'event_created', label: 'Issue Created'},
@@ -102,8 +101,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             instanceID = this.props.selectedSubscription.instance_id;
         }
 
-        console.log("Statee", props.selectedSubscription && props.selectedSubscription.filters);
-        
         let fetchingIssueMetadata = false;
         if (filters.projects.length && instanceID) {
             fetchingIssueMetadata = true;
@@ -221,21 +218,21 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         }
 
         const keys: string[] = [];
-        const issue_statuses: Status[] = [];
+        const statuses: Status[] = [];
         if (this.state.projectStatuses) {
             this.state.projectStatuses.forEach((element: ProjectStatuses) => {
                 if (this.state.filters.issue_types.includes(element.id) || !this.state.filters.issue_types.length) {
                     element.statuses.forEach((status: Status) => {
                         if (!keys.includes(status.id)) {
                             keys.push(status.id);
-                            issue_statuses.push(status);
+                            statuses.push(status);
                         }
                     });
                 }
             });
         }
 
-        this.setState({filters, issue_statuses, conflictingError: null});
+        this.setState({filters, issue_statuses: statuses, conflictingError: null});
     };
 
     handleIssueStatusChange = (id: keyof ChannelSubscriptionFiltersModel, value: string[] | null) => {
@@ -278,19 +275,19 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             const projectStatuses = data as ProjectStatuses[];
 
             const keys: string[] = [];
-            const issue_statuses: Status[] = [];
+            const statuses: Status[] = [];
             projectStatuses.forEach((element: ProjectStatuses) => {
                 if (this.state.filters.issue_types.includes(element.id) || !this.state.filters.issue_types.length) {
                     element.statuses.forEach((status) => {
                         if (!keys.includes(status.id)) {
                             keys.push(status.id);
-                            issue_statuses.push(status);
+                            statuses.push(status);
                         }
                     });
                 }
             });
 
-            const state = {issue_statuses, projectStatuses} as State;
+            const state = {issue_statuses: statuses, projectStatuses} as State;
 
             if (error) {
                 state.getMetaDataErr = `The project ${projectID} is unavailable. Please contact your system administrator.`;
