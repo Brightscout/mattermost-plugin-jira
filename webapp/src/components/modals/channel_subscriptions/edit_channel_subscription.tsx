@@ -275,13 +275,12 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         }
 
         this.props.getProjectStatuses(instanceID, projectID).then(({data, error}) => {
-            const projectStatuses = data as ProjectStatuses[];
-
             if (error) {
                 this.setState({getIssueStatusesErr: 'Error occurred while getting the issue statuses.'});
                 return;
             }
 
+            const projectStatuses = data as ProjectStatuses[];
             const keys: string[] = [];
             const statuses: Status[] = [];
             if (projectStatuses) {
@@ -475,7 +474,6 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         <ReactSelectSetting
                             name={'issue_status'}
                             label={'Issue Status'}
-                            required={false}
                             onChange={this.handleIssueStatusChange}
                             options={issueStatusOptions}
                             isMulti={true}

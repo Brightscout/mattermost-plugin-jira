@@ -499,7 +499,6 @@ exports[`components/EditChannelSubscription should match snapshot after fetching
         onChange={[Function]}
         options={Array []}
         removeValidate={[Function]}
-        required={false}
         theme={
           Object {
             "awayIndicator": "#ffbc42",

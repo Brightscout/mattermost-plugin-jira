@@ -548,12 +548,12 @@ func (p *Plugin) httpGetJiraProjectStatuses(w http.ResponseWriter, r *http.Reque
 	projectID := r.FormValue("project_id")
 	client, _, _, err := p.getClient(types.ID(instanceID), types.ID(mattermostUserID))
 	if err != nil {
-		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(err, "failed to GetProjectMetadata"))
+		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(err, "failed to get client"))
 	}
 
 	projectStatuses, err := client.ListProjectStatuses(projectID)
 	if err != nil {
-		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(err, "failed to GetProjectMetadata"))
+		return respondErr(w, http.StatusInternalServerError, errors.WithMessage(err, "failed to list project statuses"))
 	}
 
 	return respondJSON(w, projectStatuses)
