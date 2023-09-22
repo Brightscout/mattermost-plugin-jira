@@ -188,11 +188,11 @@ export const getProjectStatuses = (instanceID: string, projectID: string) => {
             data = await doFetch(`${baseUrl}/api/v2/get-project-statuses?instance_id=${instanceID}&project_id=${projectID}`, {
                 method: 'get',
             });
+
+            return {data};
         } catch (error) {
             return {error};
         }
-
-        return {data};
     };
 };
 
