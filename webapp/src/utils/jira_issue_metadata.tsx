@@ -229,7 +229,7 @@ export function getCustomFieldFiltersForProjects(metadata: IssueMetadata | null,
 
     if (issueStatuses) {
         result.push({
-            key: 'status',
+            key: FIELD_KEY_STATUS,
             name: 'Status',
             schema: {
                 type: 'array',
