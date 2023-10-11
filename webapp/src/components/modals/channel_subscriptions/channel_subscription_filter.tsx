@@ -202,7 +202,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
         if (field.key === FIELD_KEY_STATUS) {
             inclusionSelectOptions = [
                 {label: 'Include', value: FilterFieldInclusion.INCLUDE_ANY},
-                {label: 'Empty', value: FilterFieldInclusion.EMPTY},
+                {label: 'Exclude', value: FilterFieldInclusion.EXCLUDE_ANY},
             ];
         }
 
