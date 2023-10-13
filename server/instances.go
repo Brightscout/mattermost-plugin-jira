@@ -151,6 +151,28 @@ func (p *Plugin) InstallInstance(instance Instance) error {
 				}
 			}
 
+			if instance.Common().Type == CloudOAuthInstanceType && len(instances.IDs()) > 0 && instances.checkIfExists(instance.GetID()) {
+				p.API.LogDebug("Getting the stored JWT intance data to store inside OAuth instance data for storing its data in the OAuth instance.")
+				jwtInstance, err := p.instanceStore.LoadInstance(instance.GetID())
+				if err != nil {
+					p.API.LogError("Error occurred while fetching the JWT instance", "Error", err.Error())
+					return err
+				}
+
+				p.API.LogDebug("Instance type stored in KV store", "Type", jwtInstance.Common().Type)
+				if jwtInstance.Common().Type == CloudInstanceType {
+					instance.(*cloudOAuthInstance).JWTInstance = jwtInstance.(*cloudInstance)
+				} else if jwtInstance.Common().Type == CloudOAuthInstanceType {
+					instance.(*cloudOAuthInstance).JWTInstance = jwtInstance.(*cloudOAuthInstance).JWTInstance
+				}
+
+				if instance.(*cloudOAuthInstance).JWTInstance != nil {
+					p.API.LogDebug("JWT instance successfully stored inside cloud OAuth instance data.", "JWTInstacne", instance.(*cloudOAuthInstance).JWTInstance)
+				} else {
+					p.API.LogDebug("Failed to store JWT instance inside cloud OAuth instance data.", "JWTInstacne", instance.(*cloudOAuthInstance).JWTInstance)
+				}
+			}
+
 			err := p.instanceStore.StoreInstance(instance)
 			if err != nil {
 				return err
