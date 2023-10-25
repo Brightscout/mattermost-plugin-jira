@@ -228,21 +228,22 @@ export function getCustomFieldFiltersForProjects(metadata: IssueMetadata | null,
         } as FilterField);
     }
 
-    // Filtering out the statuses on th basis of selected issue types
+    // Filtering out the statuses on the basis of selected issue types
     const issueTypesWithStatuses = metadata && metadata.issue_types;
-    const keys: string[] = [];
+    const keys = new Set<string>();
     const statuses: Status[] = [];
+
     if (issueTypesWithStatuses) {
-        issueTypesWithStatuses.forEach((element: IssueTypeWithStatuses) => {
+        for (const element of issueTypesWithStatuses) {
             if (issueTypes.includes(element.id) || !issueTypes.length) {
-                element.statuses.forEach((status) => {
-                    if (!keys.includes(status.id)) {
-                        keys.push(status.id);
+                for (const status of element.statuses) {
+                    if (!keys.has(status.id)) {
+                        keys.add(status.id);
                         statuses.push(status);
                     }
-                });
+                }
             }
-        });
+        }
     }
 
     if (statuses.length) {
