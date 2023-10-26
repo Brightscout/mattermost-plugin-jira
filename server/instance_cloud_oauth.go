@@ -99,8 +99,8 @@ func (ci *cloudOAuthInstance) getClientForConnection(connection *Connection) (*j
 	oauth2Conf := ci.GetOAuthConfig()
 	ctx := context.Background()
 	tokenSource := oauth2Conf.TokenSource(ctx, connection.OAuth2Token)
-	ci.Plugin.API.LogDebug("Returning a JWT token client in case the stored JWT instance is not nil and the user's oauth token is nil")
 	if ci.JWTInstance != nil && tokenSource == nil {
+		ci.Plugin.API.LogDebug("Returning a JWT token client in case the stored JWT instance is not nil and the user's oauth token is nil")
 		return ci.JWTInstance.getClientForConnection(connection)
 	}
 
