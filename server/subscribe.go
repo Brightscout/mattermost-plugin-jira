@@ -684,7 +684,7 @@ func (p *Plugin) hasPermissionToManageSubscription(instanceID types.ID, userID, 
 
 	switch cfg.RolesAllowedToEditJiraSubscriptions {
 	case "team_admin":
-		if !p.client.User.HasPermissionToChannel(userID, channelID, model.PermissionManageTeam) {
+		if !p.client.User.HasPermissionTo(userID, model.PermissionManageTeam) {
 			return errors.New("is not team admin")
 		}
 	case "channel_admin":
@@ -702,7 +702,9 @@ func (p *Plugin) hasPermissionToManageSubscription(instanceID types.ID, userID, 
 				return errors.New("is not channel admin")
 			}
 		default:
-			return errors.New("can only subscribe in public and private channels")
+			if !p.client.User.HasPermissionTo(userID, model.PermissionManageSystem) {
+				return errors.New("is not system admin")
+			}
 		}
 	case "users":
 	default:
