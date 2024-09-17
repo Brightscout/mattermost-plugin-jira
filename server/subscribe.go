@@ -702,9 +702,7 @@ func (p *Plugin) hasPermissionToManageSubscription(instanceID types.ID, userID, 
 				return errors.New("is not channel admin")
 			}
 		default:
-			if !p.client.User.HasPermissionTo(userID, model.PermissionManageSystem) {
-				return errors.New("is not system admin")
-			}
+			return errors.New("can only subscribe in public and private channels")
 		}
 	case "users":
 	default:
